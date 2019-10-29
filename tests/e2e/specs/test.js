@@ -6,33 +6,27 @@ import mountVue from 'cypress-vue-unit-test'
 describe('My First Test', () => {
     beforeEach(mountVue(KeyInput))
 
-    // need a set of success cases and failure cases
-    // success cases include the stored key sequence and the actual keypresses
-    // failure cases include the stored key sequence, the actual keypresses, and the failure message
-
-    // a single keypress without modifiers
-    // two sequential keypresses without modifiers
-    // a keypress with a single modifier
-    // a modified keypress followed by a non-modified keypress
-    // a modified keypress followed by a differently modified keypress
-    // two keypresses that share a modifier
-    // repeat with multiple modifiers
     const successCases = [
         ['a', 'a'],
         ['a b', 'ab'],
         ['alt v c', '{alt}', 'vc'],
-        ['ctrl+a', '{ctrl}a']
+        ['ctrl+a', '{ctrl}a'],
+        ['ctrl+a ctrl+b', '{ctrl}ab'],
+        ['ctrl+a ctrl+b', '{ctrl}a', '{ctrl}b'],
     ];
 
     const failureCases = [
         ['a', 'b', 'b'],
         ['a', 'ctrl+a', '{ctrl}a'],
+        ['a b', 'b a', 'ba'],
+        ['alt v c', 'alt+v', '{alt}v'],
         ['ctrl+a', 'a', 'a'],
         ['ctrl+a', 'alt+a', '{alt}a'],
         ['ctrl+a', 'ctrl+shift+a', '{ctrl}{shift}a'],
         ['ctrl+shift+a', 'ctrl+a', '{ctrl}a'],
         ['ctrl+a b', 'ctrl+a c', '{ctrl}a', 'c'],
         ['ctrl+a b', 'ctrl+a ctrl+b', '{ctrl}ab'],
+        ['ctrl+a ctrl+b', 'ctrl+b ctrl+a', '{ctrl}ba'],
     ]
 
     successCases.forEach(([expected, ...actual]) => {

@@ -58,22 +58,24 @@ export default {
         handleKeypress(event) {
             this.keypresses.push(event);
         },
-        hasUnexpectedModifier(event) {
-            return this.expected.split(' ').some(sequence => {
-                return mods.some(modifier =>
-                    !sequence.includes(modifier) && event[`${modifier}Key`])
-            })
+        hasUnexpectedModifier(nextSequence, event) {
+            return mods.some(modifier =>
+                !nextSequence.includes(modifier) && event[`${modifier}Key`])
         },
-        isMissingModifier(event) {
-            return this.expected.split(' ').some(sequence => {
-                return mods.some(modifier =>
-                    sequence.includes(modifier) && !event[`${modifier}Key`])
-            })
+        isMissingModifier(nextSequence, event) {
+            return mods.some(modifier =>
+                nextSequence.includes(modifier) && !event[`${modifier}Key`])
         },
         handleKeydown(event) {
             this.keydowns.push(event);
             // for some reason I cannot discover, pressing 'Alt' in an input in Chrome focuses away
             if (event.key == "Alt") event.preventDefault();
+            const keypressIdx = this.keydowns.filter(e => !modKeys.includes(e.key)).length - 1;
+            if (keypressIdx >= this.expected.split(' ').length) {
+                this.alertFailure(event);
+            }
+
+            const nextSequence = this.expected.split(' ')[keypressIdx]
             modifiers.forEach(({ key, bind }) => {
                 if (event.key == key && !this.expected.includes(bind)) {
                     this.alertFailure(event)
@@ -81,14 +83,14 @@ export default {
             })
             // if (['Control', 'Alt', 'Shift'].includes(event.key)) return;
 
-            if (this.isWrong(event)) {
+            if (this.isWrong(nextSequence, event)) {
                 this.alertFailure();
             }
         },
         isWrong(event) {
             return !this.expected.includes(event.key) ||
-                this.hasUnexpectedModifier(event) ||
-                this.isMissingModifier(event)
+                this.hasUnexpectedModifier(nextSequence, event) ||
+                this.isMissingModifier(nextSequence, event)
         },
         handleKeyup(event) {
             this.keyups.push(event);
