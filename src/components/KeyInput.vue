@@ -2,24 +2,21 @@
 import Mosuetrap from 'mousetrap';
 
 const modifiers = [
-    {bind: 'ctrl', attr: 'ctrlKey', key: 'Control'},
-    {bind: 'alt', attr: 'altKey', key: 'Alt'},
-    {bind: 'shift', attr: 'shiftKey', key: 'Shift'},
+    {binding: 'ctrl', attr: 'ctrlKey', key: 'Control'},
+    {binding: 'alt', attr: 'altKey', key: 'Alt'},
+    {binding: 'shift', attr: 'shiftKey', key: 'Shift'},
 ];
 
 const modAttrs = modifiers.map(m => m.attr);
 const modKeys = modifiers.map(m => m.key);
-const mods = modifiers.map(m => m.bind);
+const mods = modifiers.map(m => m.binding);
 
 export default {
+    props: ['expected'],
     data() {
         return {
-            expected: '',
             mousetrap: null,
-            message: '',
-            keypresses: [],
             keydowns: [],
-            keyups: [],
         }
     },
     mounted() {
@@ -34,29 +31,29 @@ export default {
     },
     methods: {
         initialize() {
-            this.message = '';
-            if (this.expected) 
+            this.keydowns = [];
+            if (this.expected) {
                 this.mousetrap.bind(this.expected, this.alertSuccess);
+            }
         },
         alertSuccess(event) {
             event.preventDefault();
             this.$emit('success');
-            this.message = 'correct!';
         },
         alertFailure() {
-            this.$emit('failure');
-            this.message = this.keydowns
+            const actualKeypress = this.keydowns
                 .filter(e => !modKeys.includes(e.key))
                 .map(this.stringifyKeypress)
                 .join(' ')
+            this.$emit('failure', actualKeypress);
         },
         stringifyKeypress(event) {
-            const mods = modifiers.filter(({ attr }) => event[attr]).map(m => m.bind).join('+');
+            const mods = this.modifiersInEvent(event).map(m => m.binding).join('+');
             const key = event.code.replace('Key', '').toLowerCase();
             return mods ? `${mods}+${key}` : key;
         },
-        handleKeypress(event) {
-            this.keypresses.push(event);
+        modifiersInEvent(event) {
+            return modifiers.filter(({ attr }) => event[attr]);
         },
         hasUnexpectedModifier(nextSequence, event) {
             return mods.some(modifier =>
@@ -70,31 +67,28 @@ export default {
             this.keydowns.push(event);
             // for some reason I cannot discover, pressing 'Alt' in an input in Chrome focuses away
             if (event.key == "Alt") event.preventDefault();
-            const keypressIdx = this.keydowns.filter(e => !modKeys.includes(e.key)).length - 1;
+
+            let keypressIdx = this.keydowns.filter(e => !modKeys.includes(e.key)).length - 1;
             if (keypressIdx >= this.expected.split(' ').length) {
                 this.alertFailure(event);
             }
+            if (keypressIdx < 0) keypressIdx = 0;
 
             const nextSequence = this.expected.split(' ')[keypressIdx]
-            modifiers.forEach(({ key, bind }) => {
-                if (event.key == key && !this.expected.includes(bind)) {
+
+            modifiers.forEach(({ key, binding }) => {
+                if (event.key == key && !nextSequence.includes(binding)) {
                     this.alertFailure(event)
                 }
             })
-            // if (['Control', 'Alt', 'Shift'].includes(event.key)) return;
-
             if (this.isWrong(nextSequence, event)) {
                 this.alertFailure();
             }
         },
-        isWrong(event) {
-            return !this.expected.includes(event.key) ||
+        isWrong(nextSequence, event) {
+            return !nextSequence.includes(event.key) ||
                 this.hasUnexpectedModifier(nextSequence, event) ||
                 this.isMissingModifier(nextSequence, event)
-        },
-        handleKeyup(event) {
-            this.keyups.push(event);
-            // keyCode/which is a keyboard code
         },
     }
 }
@@ -103,17 +97,11 @@ export default {
 
 
 <template>
-<div>
     <input
         style="height: 10px; width: 100px"
         ref="input"
         data-cy="key-input"
         @input="(e) => e.target.value = ''"
-        @keypress="handleKeypress"
         @keydown="handleKeydown"
-        @keyup="handleKeyup"
     />
-
-    <span>{{ message }}</span>
-</div>
 </template>

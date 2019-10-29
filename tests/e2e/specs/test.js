@@ -1,10 +1,10 @@
 // https://docs.cypress.io/api/introduction/api.html
 
-import KeyInput from '../../../src/components/KeyInput.vue'
+import KeyTrainer from '../../../src/components/KeyTrainer.vue'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('My First Test', () => {
-    beforeEach(mountVue(KeyInput))
+    beforeEach(mountVue(KeyTrainer))
 
     const successCases = [
         ['a', 'a'],
@@ -31,7 +31,7 @@ describe('My First Test', () => {
 
     successCases.forEach(([expected, ...actual]) => {
         it('handles success for ' + expected, () => {
-            Cypress.vue.expected = expected;
+            Cypress.vue.item.sequence = expected;
             actual.forEach(sequence => {
                 cy.get('[data-cy=key-input]').type(sequence)
             });
@@ -41,7 +41,7 @@ describe('My First Test', () => {
 
     failureCases.forEach(([expected, failureMessage, ...actual]) => {
         it('handles failure for ' + expected + ' when it receives ' + actual.join(), () => {
-            Cypress.vue.expected = expected;
+            Cypress.vue.item.sequence = expected;
             actual.forEach(sequence => {
                 cy.get('[data-cy=key-input]').type(sequence)
             })
