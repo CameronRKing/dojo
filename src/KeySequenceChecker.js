@@ -71,11 +71,15 @@ export default class KeySequenceChecker {
 
         const nextCombo = this.getNextKeyCombo(event);
 
-        modifiers.forEach(({ key, binding }) => {
-            if (event.key == key && !nextCombo.includes(binding)) {
-                this.alertFailure(event)
-            }
-        })
+        if (this.isModifier(event)) {
+            modifiers.forEach(({ key, binding }) => {
+                if (event.key == key && !nextCombo.includes(binding)) {
+                    this.alertFailure(event)
+                }
+            })
+            return;
+        }
+
         if (this.isWrong(nextCombo, event)) {
             this.alertFailure();
         }
@@ -85,6 +89,10 @@ export default class KeySequenceChecker {
         let keypressIdx = this.keydowns.filter(e => !modKeys.includes(e.key)).length - 1;
         if (keypressIdx == -1) keypressIdx = 0;
         return this.sequence.split(' ')[keypressIdx];
+    }
+
+    isModifier(event) {
+        return modKeys.some(key => event.key == key);
     }
 
     isWrong(nextCombo, event) {

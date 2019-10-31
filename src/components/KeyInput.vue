@@ -2,7 +2,7 @@
 import KeySequenceChecker from '../KeySequenceChecker';
 
 export default {
-    props: ['expected'],
+    props: ['expected', 'prompt'],
     data() {
         return {
             checker: null,
@@ -29,6 +29,7 @@ export default {
         style="height: 10px; width: 100px"
         ref="input"
         data-cy="key-input"
+        :placeholder="prompt"
         @input="(e) => e.target.value = ''"
     />
 </template>

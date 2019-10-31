@@ -1,9 +1,7 @@
-// https://docs.cypress.io/api/introduction/api.html
-
 import KeyTrainer from '../../../src/components/KeyTrainer.vue'
 import mountVue from 'cypress-vue-unit-test'
 
-describe('My First Test', () => {
+describe('KeyTrainer', () => {
     beforeEach(mountVue(KeyTrainer))
 
     const successCases = [
