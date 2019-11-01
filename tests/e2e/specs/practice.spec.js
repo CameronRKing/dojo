@@ -33,7 +33,7 @@ describe('SetPractice', () => {
     it.only('optionally shows the correct answer after a single incorrect answer', () => {
         cy.get('[data-cy=should-show]').click()
         cy.get('[data-cy=show-options]').click()
-        cy.contains('after 1 guess').click()
+        cy.contains('after 1 guess').click({force: true})
 
         cy.get('[data-cy=key-input]').type('b')
 

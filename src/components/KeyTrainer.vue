@@ -1,15 +1,20 @@
 <script>
 import KeyInput from './KeyInput';
 import ShowSentence from './ShowSentence';
+import ProgressBar from './ProgressBar';
 
 export default {
     components: {
-            KeyInput,
-            ShowSentence,
+        KeyInput,
+        ShowSentence,
+        ProgressBar,
     },
     data() {
         return {
-            toTrain: [],
+            toTrain: [
+                { action: 'Underline text', sequence: 'ctrl+u' },
+                { action: 'Bold text', sequence: 'ctrl+b' },
+            ],
             item: null,
             message: '',
             completed: [],
@@ -78,12 +83,15 @@ export default {
 
 
 <template>
-<div style="display: flex;">
-    <div style="width: 5px;">
-        <div data-cy="progress-bar" style="width: 5px; background: green;" :style="{height: completed.length / toTrain.length * 100 + '%'}"></div>
+<div class="flex flex-col justify-start items-center m-auto max-w-2xl">
+    <ProgressBar :progress="completed.length / toTrain.length" />
+    <div class="h-1 w-full bg-green-200">
+        <div data-cy="progress-bar" class="h-1 bg-green-400" :style="{width: completed.length / toTrain.length * 100 + '%'}"></div>
     </div>
-    <div>{{ completed.length }}/{{ toTrain.length }}</div>
-    <div>{{ errors.length }} errors</div>
+    <div class="flex justify-between w-full">
+        <div>{{ completed.length }}/{{ toTrain.length }}</div>
+        <div>{{ errors.length }} errors</div>
+    </div>
 
     <div v-if="item">
         <h2 data-cy="action-label" class="animated" :class="animateClass">{{ item.action }}</h2>
@@ -99,7 +107,13 @@ export default {
 </div>
 </template>
 
-<style>
+<style lang="postcss">
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
 /* from animate.css, with modifications */
 .animated {
     -webkit-animation-duration: 0.3s;
