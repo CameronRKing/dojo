@@ -1,13 +1,13 @@
 <script>
 export default {
-    props: ['progress'],
+    props: ['progress', 'noBackground'],
 }
 </script>
 
 
 
 <template>
-    <div class="h-1 w-full bg-green-200">
+    <div class="h-1 w-full" :class="{'bg-green-200': !noBackground}">
         <div class="h-1 bg-green-400 progress-bar" :style="{width: progress * 100 + '%'}"></div>
     </div>
 </template>

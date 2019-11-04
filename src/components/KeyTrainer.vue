@@ -9,12 +9,9 @@ export default {
         ShowSentence,
         ProgressBar,
     },
+    props: ['toTrain'],
     data() {
         return {
-            toTrain: [
-                { action: 'Underline text', sequence: 'ctrl+u' },
-                { action: 'Bold text', sequence: 'ctrl+b' },
-            ],
             item: null,
             message: '',
             completed: [],
@@ -85,9 +82,7 @@ export default {
 <template>
 <div class="flex flex-col justify-start items-center m-auto max-w-2xl">
     <ProgressBar :progress="completed.length / toTrain.length" />
-    <div class="h-1 w-full bg-green-200">
-        <div data-cy="progress-bar" class="h-1 bg-green-400" :style="{width: completed.length / toTrain.length * 100 + '%'}"></div>
-    </div>
+    <ProgressBar no-background color="bg-red-400" :progress="errors.length / toTrain.length" />
     <div class="flex justify-between w-full">
         <div>{{ completed.length }}/{{ toTrain.length }}</div>
         <div>{{ errors.length }} errors</div>

@@ -7,7 +7,12 @@
 <script>
 export default {
   name: 'my-button',
-
+  data() {
+    return {
+      foo: 'foo',
+    }
+  },
+  props: ['bar'],
   methods: {
     onClick() {
       this.$emit('click')
