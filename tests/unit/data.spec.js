@@ -1,28 +1,79 @@
-const test = require('tape');
-const VueComponent = require('../../src/VueComponent.js');
+import { expect } from 'chai'
+import VueComponent from '@/VueComponent.js';
 
-[[
-`export default {
+
+describe('Adding data', () => {
+    const dataExists = `export default {
     data() {
         return {
-            foo: 'foo',
+            foo: 'foo'
         };
     }
-}`,
-(cmp) => cmp.addData('bar', 'bar'),
-`export default {
+};`;
+    const bar = (val) => `export default {
     data() {
         return {
             foo: 'foo',
-            bar: 'bar',
-        }
+            bar: ${val}
+        };
     }
-}`]].forEach(([start, action, end]) => {
-    test('works', function(t) {
-        t.plan(1);
+};`;
 
-        const cmp = new VueComponent(start);
-        action(cmp);
-        t.equal(end, cmp.toString());
+
+    [[
+        'adds to a string to an existing object',
+        dataExists,
+        (cmp) => cmp.setData('bar', 'bar'),
+        bar("'bar'")
+    ],
+    [
+        'adds a boolean to an existing object',
+        dataExists,
+        (cmp) => cmp.setData('bar', true),
+        bar("true")
+    ],
+    [
+        'adds a number to an existing object',
+        dataExists,
+        (cmp) => cmp.setData('bar', 42),
+        bar("42")
+    ],
+    [
+        'adds an object literal to an existing object',
+        dataExists,
+        (cmp) => cmp.setData('bar', { baz: 'baz' }),
+        bar(`{
+                baz: 'baz'
+            }`)
+    ],
+    [
+        'creates the data function and adds to the object if it doesnt exist',
+        'export default {}',
+        (cmp) => cmp.setData('foo', 'foo'),
+        `export default {
+    data() {
+        return {
+            foo: 'foo'
+        };
+    }
+};`
+    ],
+    [
+        'overwrites a property if it is already there',
+        dataExists,
+        (cmp) => cmp.setData('foo', 'updated value!'),
+        `export default {
+    data() {
+        return {
+            foo: 'updated value!'
+        };
+    }
+};`
+    ]].forEach(([name, start, action, end]) => {
+        it(name, () => {
+            const cmp = new VueComponent(start);
+            action(cmp);
+            expect(cmp.toString()).to.equal(end)
+        })
     })
 })
