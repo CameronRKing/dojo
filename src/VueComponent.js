@@ -1,14 +1,34 @@
 const j = require('jscodeshift');
 
 
-function object(obj) {
+function object(obj={}) {
     return j.objectExpression(
         Object.keys(obj).map(key => objectProperty(key, obj[key]))
     )
 }
 
 function objectProperty(key, value) {
-    return j.property('init', j.identifier(key), typeof value == 'object' ? object(value) : j.literal(value));
+    let val;
+    if (isNode(value)) {
+        val = value.get().value;
+    } else {
+        if (typeof value == 'object') {
+            val = object(value);
+        } else {
+            val = j.literal(value);
+        }
+
+    }
+
+    return j.property('init', j.identifier(key), val);
+}
+
+function isNode(value) {
+    return typeof value.get == 'function';
+}
+
+function functionSourceToAST(src) {
+    return j('export default { tmp: function' + src + '}').find(j.FunctionExpression).get()
 }
 
 function returnEmptyObject() {
@@ -23,27 +43,19 @@ function returnEmptyObject() {
     );
 }
 
+function assocIn(modified, toAdd) {
+    return Object.keys(toAdd).forEach(key => {
+        modified[key] = toAdd[key];
+    });
+}
+
 module.exports = class VueComponent {
     constructor(text) {
         this.j = j(text);
     }
 
     setData(key, value) {
-        let data = this.j.find(j.ExportDefaultDeclaration)
-            .find(j.Identifier, { name: 'data' })
-            .closest(j.Property);
-
-        if (!data.length) {
-            const prop = j.property('init', j.identifier('data'), returnEmptyObject())
-            prop.method = true;
-            this.j.find(j.ExportDefaultDeclaration)
-                .get()
-                .value
-                .declaration
-                .properties
-                .push(prop)
-            data = j(prop);
-        }
+        const data = this.findOrCreate('data', returnEmptyObject(), { method: true })
 
         const dataObject = data.find(j.ReturnStatement)
             .find(j.ObjectExpression)
@@ -61,6 +73,57 @@ module.exports = class VueComponent {
                 .push(objectProperty(key, value))
         }
         return this;
+    }
+
+    setMethod(name, fnSrc) {
+        const methods = this.findOrCreate('methods', object());
+
+        const prop = objectProperty(name, functionSourceToAST(fnSrc));
+        prop.method = true;
+        methods.get()
+            .value
+            .value
+            .properties
+            .push(prop);
+
+        return this;
+    }
+
+    findOrCreate(name, value, overwrites) {
+        let node = this.find(name);
+
+        if (!node.length) {
+            node = this.create(name, value, overwrites);
+        }
+
+        return node;
+    }
+
+
+
+    /**
+     * Looks for a property with the given name in the export default object
+     **/
+    find(name) {
+        return this.j.find(j.ExportDefaultDeclaration)
+            .find(j.Identifier, { name })
+            .closest(j.Property);
+    }
+
+    /**
+     * Adds a new property to the export default object
+     **/
+    create(name, value, overwrites) {
+        const prop = j.property('init', j.identifier(name), value)
+        assocIn(prop, overwrites);
+
+        this.j.find(j.ExportDefaultDeclaration)
+            .get()
+            .value
+            .declaration
+            .properties
+            .push(prop);
+        return j(prop);
     }
 
     toString() {
