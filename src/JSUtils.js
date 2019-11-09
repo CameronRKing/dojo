@@ -103,48 +103,45 @@ class AnonymousFunction {
     }
 }
 
+
+const routes = {
+    anonWithBody: (fn) => fn.addBody(),
+    anonReturnObject: (fn) => fn.returnObject(),
+    fnAddArg: (fn, arg) => fn.addArg(arg),
+    fnRemoveArg: (fn, argIdx) => fn.removeArg(argIdx),
+    fnSetDefault: (fn, argIdx, defaultVal) => fn.setDefaultArg(argIdx, defaultVal),
+    // remove default (should be setDefault with undefined)
+    // deconstruct argument
+    // reconstruct argument
+    // extract
+    // inline
+}
+
+// wrap each call in routes with input/output logic
+// => turning src+idx into a function
+// <= returning updated source code as a string
+const wrappedRoutes = mapWithKeys(routes, (key, handler) =>
+    [key, (src, idx, ...args) => toFnAt(src, idx, (fn) => handler(fn, ...args))]
+);
+
+function mapWithKeys(obj, cb) {
+    return Object.keys(obj).reduce((acc, key) => {
+        const [attr, val] = cb(key, obj[key]);
+        return {
+            ...acc,
+            [attr]: val,
+        };
+    }, {});
+}
+
+// with a function that accepts src/idx,
+// hands over the function found there and any args to the handler,
+// and returns the updated AST printed source
 const toFnAt = (src, idx, cb) => {
     const jSrc = j(src);
     const fn = AnonymousFunction.closestToPoint(jSrc, idx);
     cb(fn)
     return toSource(jSrc);
 }
-export default {
 
-    anonWithBody(src, idx) {
-        return toFnAt(src, idx, (fn) => fn.addBody());
-    },
-
-    // add parenthesis/braces to anonymous function
-    anonReturnObject(src, idx) {
-        return toFnAt(src, idx, (fn) => fn.returnObject());
-    },
-
-    fnAddArg(src, idx, arg) {
-        return toFnAt(src, idx, (fn) => fn.addArg(arg));
-    },
-
-    fnRemoveArg(src, idx, argIdx) {
-        return toFnAt(src, idx, (fn) => fn.removeArg(argIdx));
-    },
-
-    fnSetDefault(src, idx, argIdx, defaultVal) {
-        return toFnAt(src, idx, (fn) => fn.setDefaultArg(argIdx, defaultVal));
-    }
-
-    // deconstructArg(src, idx, argIdx, contents) {
-
-    // }
-
-    // reconstructArg(src, idx, argIdx) {
-
-    // }
-
-    // extractFn(src, start, end) {
-
-    // }
-    // add argument
-    // deconstruct argument
-    // reconstruct argument
-    // extract
-}
+export default wrappedRoutes;
