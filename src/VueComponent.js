@@ -1,31 +1,5 @@
-const j = require('jscodeshift');
-
-
-function object(obj={}) {
-    return j.objectExpression(
-        Object.keys(obj).map(key => objectProperty(key, obj[key]))
-    )
-}
-
-function objectProperty(key, value) {
-    let val;
-    if (isNode(value)) {
-        val = value.get().value;
-    } else {
-        if (typeof value == 'object') {
-            val = object(value);
-        } else {
-            val = j.literal(value);
-        }
-
-    }
-
-    return j.property('init', j.identifier(key), val);
-}
-
-function isNode(value) {
-    return typeof value.get == 'function';
-}
+import j from 'jscodeshift';
+import { object, objectProperty, isNode } from './JSUtils.js';
 
 function functionSourceToAST(src) {
     return j('export default { tmp: function' + src + '}').find(j.FunctionExpression).get()
@@ -49,7 +23,7 @@ function assocIn(modified, toAdd) {
     });
 }
 
-module.exports = class VueComponent {
+export default class VueComponent {
     constructor(text) {
         this.j = j(text);
     }
@@ -89,6 +63,14 @@ module.exports = class VueComponent {
         return this;
     }
 
+    addComponent(name, path) {
+
+    }
+
+    removeComponent(name) {
+
+    }
+
     findOrCreate(name, value, overwrites) {
         let node = this.find(name);
 
@@ -98,8 +80,6 @@ module.exports = class VueComponent {
 
         return node;
     }
-
-
 
     /**
      * Looks for a property with the given name in the export default object
