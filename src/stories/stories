@@ -23,6 +23,7 @@ storyquilt:
         + ideally would highlight the source code as you go
             = and vice versa: hovering over a source code element should highlight the element on the page, just like element exploration in Chrome
     - keyboard element modification
+        ! when a component is selected, do we put the class in the parent or inside the component? (can be solved by concept of being "inside" a component, and only being inside one component at a time)
         + change classes
         + change attributes
             = shortcuts for Vue attributes
