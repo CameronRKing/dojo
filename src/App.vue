@@ -1,3 +1,13 @@
+<script>
+export default {
+    created() {
+      window.vm = this;
+    },
+
+    path: __filename
+};
+</script>
+
 <template>
   <div id="app">
     <div id="nav">

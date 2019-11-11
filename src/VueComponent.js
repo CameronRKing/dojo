@@ -1,5 +1,5 @@
-import j from 'jscodeshift';
-import { object, objectProperty, isNode } from './JSUtils.js';
+const j = require('jscodeshift');
+const { object, objectProperty, isNode } = require('./JSUtils.js');
 
 function functionSourceToAST(src) {
     return j('export default { tmp: function' + src + '}').find(j.FunctionExpression).get()
@@ -23,7 +23,7 @@ function assocIn(modified, toAdd) {
     });
 }
 
-export default class VueComponent {
+module.exports = class VueComponent {
     constructor(text) {
         this.j = j(text);
     }
@@ -93,7 +93,7 @@ export default class VueComponent {
     /**
      * Adds a new property to the export default object
      **/
-    create(name, value, overwrites) {
+    create(name, value, overwrites={}) {
         const prop = j.property('init', j.identifier(name), value)
         assocIn(prop, overwrites);
 

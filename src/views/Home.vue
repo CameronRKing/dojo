@@ -11,8 +11,6 @@
 import Vue from 'vue';
 import MyButton from '@/components/MyButton'
 
-window.cmp = MyButton;
-
 export default {
     data() {
         return {
@@ -37,9 +35,6 @@ export default {
             }
         })
         , {})
-    },
-    created() {
-        window.vm = this;
     },
     methods: {
         addProp(name) {
