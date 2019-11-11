@@ -9,8 +9,8 @@ exports.toSource = (jSrc) => {
         // Recast seperates multiline object properties by an extra newline on both sides
         // https://github.com/benjamn/recast/issues/242
         // the author did it for personal preference and, after years of complaints, has not made it alterable
-        .replace(/}\n\n/mg, '')
-        .replace(/\n\n(.+){/mg, '\n$1{')
+        .replace(/,\n\n/mg, ',\n')
+        .replace(/{\n\n/mg, '{\n')
 }
 
 exports.object = (obj={}) => {

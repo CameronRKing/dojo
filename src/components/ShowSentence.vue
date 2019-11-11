@@ -1,7 +1,6 @@
 <script>
 import AdjustableNumber from './AdjustableNumber';
 import DoClause from './DoClause';
-
 export default {
     components: {
         AdjustableNumber,
@@ -38,8 +37,9 @@ export default {
             this.options.type = type;
             this.showOptions = false;
         }
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

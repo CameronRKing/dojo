@@ -1,5 +1,5 @@
 const j = require('jscodeshift');
-const { object, objectProperty, isNode } = require('./JSUtils.js');
+const { object, objectProperty, isNode, toSource } = require('./JSUtils.js');
 
 function functionSourceToAST(src) {
     return j('export default { tmp: function' + src + '}').find(j.FunctionExpression).get()
@@ -107,11 +107,6 @@ module.exports = class VueComponent {
     }
 
     toString() {
-        return this.j.toSource({ quote: 'single', lineTerminator: '\n', tabWidth: 4 })
-            // Recast seperates multiline object properties by an extra newline on both sides
-            // https://github.com/benjamn/recast/issues/242
-            // the author did it for personal preference and, after years of complaints, has not made it alterable
-            .replace(/}\n\n/mg, '')
-            .replace(/\n\n(.+){/mg, '\n$1{');
+        return toSource(this.j);
     }
 }

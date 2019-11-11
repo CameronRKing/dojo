@@ -39,8 +39,9 @@ export default {
             this.editHandler = null;
             this.stopHandler = null;
         }
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

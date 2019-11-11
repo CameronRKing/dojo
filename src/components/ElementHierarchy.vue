@@ -47,8 +47,9 @@ export default {
                 children: Array.from(el.children).map(c => this.nodeify(c))
             }
         },
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

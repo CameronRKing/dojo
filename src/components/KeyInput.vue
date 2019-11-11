@@ -1,6 +1,5 @@
 <script>
 import KeySequenceChecker from '../KeySequenceChecker';
-
 export default {
     props: ['expected', 'prompt'],
     data() {
@@ -19,7 +18,8 @@ export default {
             this.checker.setSequence(val);
         }
     },
-}
+    path: __filename
+};
 </script>
 
 

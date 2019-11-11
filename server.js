@@ -16,6 +16,7 @@ io.on('connection', (client) => {
     const jscodeshiftProcess = (filename, cb) => {
         fs.readFile(filename, 'utf8', (err, file) => {
             const blocks = parseComponent(file);
+            if (!blocks.script) return;
             const cmp = new VueComponent(blocks.script.content);
 
             cb(cmp);

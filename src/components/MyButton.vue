@@ -6,19 +6,20 @@
 
 <script>
 export default {
-  name: 'my-button',
-  data() {
-    return {
-      foo: 'foo',
-    }
-  },
-  props: ['bar'],
-  methods: {
-    onClick() {
-      this.$emit('click')
-    }
-  }
-}
+    name: 'my-button',
+    data() {
+      return {
+        foo: 'foo',
+      }
+    },
+    props: ['bar'],
+    methods: {
+      onClick() {
+        this.$emit('click')
+      }
+    },
+    path: __filename
+};
 </script>
 
 <style>

@@ -1,7 +1,6 @@
 <script>
 import * as stories from '@/stories/index.stories.js';
 import ElementHierarchy from '@/components/ElementHierarchy';
-
 export default {
     components: {
         ...stories,
@@ -26,8 +25,9 @@ export default {
                 this.storyLoaded = true;
             });
         }
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

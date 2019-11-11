@@ -73,8 +73,9 @@ export default {
             setTimeout(() => this.animateClass = '', 350);
             this.message = msg;
         },
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

@@ -10,7 +10,6 @@
 // @ is an alias to /src
 import Vue from 'vue';
 import MyButton from '@/components/MyButton'
-
 export default {
     data() {
         return {
@@ -50,7 +49,6 @@ export default {
                 const node = this.$refs.view;
                 node.removeChild(node.childNodes[0]);
             }
-
             this.vm = new Vue({
                 components: {
                     'tmp-cmp': {
@@ -65,6 +63,7 @@ export default {
             this.$refs.view.appendChild(this.vm.$el);
             this.compiled = true;
         }
-    }
-}
+    },
+    path: __filename
+};
 </script>

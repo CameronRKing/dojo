@@ -3,7 +3,6 @@ export default {
     created() {
       window.vm = this;
     },
-
     path: __filename
 };
 </script>

@@ -5,8 +5,9 @@ export default {
         toggle() {
             this.$emit('input', !this.value);
         }
-    }
-}
+    },
+    path: __filename
+};
 </script>
 
 

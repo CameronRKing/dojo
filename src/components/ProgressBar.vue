@@ -1,7 +1,8 @@
 <script>
 export default {
     props: ['progress', 'noBackground'],
-}
+    path: __filename
+};
 </script>
 
 
