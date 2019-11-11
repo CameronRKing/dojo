@@ -1,0 +1,44 @@
+components
+    - Vue client (build by webpack)
+    - socket.io server (nodejs)
+    - parse/query/manipulate layers
+        + need to make source printing pluggable
+
+data
+    - source tree
+        + components
+        + plain files
+        + stories
+        + router
+        + store
+        + tests (included in stories?)
+        + ASSETS (which I haven't even thought about)
+
+arrange
+    - expect certain files with certain contents to exist
+    - possibly take a sequence of action through the client/server
+
+act
+    - pass a message to the server
+    - take an action through the client
+
+assert changes in
+    - source files
+    - client state
+
+
+need quick way to reset source tree
+    - git checkout -- *
+        + requires source data to be hosted in git repo
+        + "clever" solution: store different states in different branches
+    - is there a way to host a directory tree virtually (or temporarily overlay a real directory with a shadow directory), so that when node.fs makes requests, they don't hit real files?
+
+    - if I hide source access behind an interface and make file access only one implementation, then I could replace it with any number of mock versions (hold data in memory, save updates to a new file instead of overwriting, etc.)
+        + this is the best solution. I know I will eventually want to support non-local projects (e.g., cloud storage)
+        + at this point, it's not even that much work
+
+
+need an e2e solution (cypress) and a unit solution (mocha?)
+    - e2e for working with the client
+    - unit (non-gui) for working with the server
+        + could use cypress, but it'd be much slower

@@ -3,7 +3,8 @@ const j = require('jscodeshift');
 function contains(point) {
     return (node) => node.start <= point && point <= node.end;
 }
-  
+
+// this needs to be a lot more flexible  
 exports.toSource = (jSrc) => {
     return jSrc.toSource({ quote: 'single', lineTerminator: '\n', tabWidth: 4, arrowParensAlways: true })
         // Recast seperates multiline object properties by an extra newline on both sides
@@ -13,16 +14,19 @@ exports.toSource = (jSrc) => {
         .replace(/{\n\n/mg, '{\n')
 }
 
+
 exports.object = (obj={}) => {
     return j.objectExpression(
         Object.keys(obj).map(key => objectProperty(key, obj[key]))
     )
 }
 
-exports.isNode = (value) => {
-    return typeof value.get == 'function';
+exports.objectProperty = (key, value) => {
+    return j.property('init', j.identifier(key), parseValue(value));
 }
 
+// c'mon. surely I don't have to write my own parsing logic?
+// there's gotta be a better way to turn a real-life JS value into its AST equivalent
 function parseValue(value) {
     let val;
     if (isNode(value)) {
@@ -38,10 +42,13 @@ function parseValue(value) {
     return val;
 }
 
-exports.objectProperty = (key, value) => {
-    return j.property('init', j.identifier(key), parseValue(value));
+// is that really the best way to check?
+exports.isNode = (value) => {
+    return typeof value.get == 'function';
 }
 
+// I don't like that this class deals only with arrow functions (and is poorly named!)
+// the argument logic applies equally to normal functions
 class AnonymousFunction {
     constructor(node) {
         this.fn = node;
@@ -55,6 +62,10 @@ class AnonymousFunction {
         return new AnonymousFunction(fns.at(fns.length - 1).get().value);
     }
 
+    // the arg param abstraction is inconsistent. removeArg && setDefaultArg should accept names.
+    // if they also want to accept indices, that's on them. Might not be necessary.
+    // I have no idea what's necessary. This stuff was built in a vacuum.
+    // I won't know what I want till it's part of my workflow.
     addArg(argName) {
         this.fn.params.push(j.identifier(argName));
     }
@@ -104,6 +115,7 @@ class AnonymousFunction {
 }
 
 
+// this controller logic needs to be split out
 const routes = {
     anonWithBody: (fn) => fn.addBody(),
     anonReturnObject: (fn) => fn.returnObject(),

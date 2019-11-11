@@ -5,30 +5,64 @@ const j = require('jscodeshift');
 const { parseComponent } = require('vue-sfc-parser');
 const VueComponent = require('./src/VueComponent');
 
+
+/**
+ * I'm pretty sure the file/dir read/write logic can
+ * and should be moved into its own object
+ **/
+
+/*
+    ideally, these two parsers should be unified behind VueComponent
+    but that means VueComponent is going to have to get smarter
+    I'll also need logic for parsing plain JS files. Where does that belong?
+    I'm not happy with JSUtils.
+*/
+function posthtmlProcess(filename, cb) => {
+    fs.readFile(filename, 'utf8', (err, file) => {
+        posthtml().use(cb).process(file)
+            .then(({ html }) => fs.writeFile(filename, html, () => {}))
+    });
+}
+
+function jscodeshiftProcess(filename, cb) => {
+    fs.readFile(filename, 'utf8', (err, file) => {
+        const blocks = parseComponent(file);
+        if (!blocks.script) return;
+        const cmp = new VueComponent(blocks.script.content);
+
+        cb(cmp);
+
+        const newSrc = file.replace(
+            blocks.script.content,
+            cmp.toString()
+        );
+        fs.writeFile(filename, newSrc, () => {});
+    });
+}
+
+/**
+ * Recursively finds .vue files in a given directory
+ *
+ * Returns an array of their paths relative to (and including) the given directory
+ * e.g., vueFilesIn('src') => ['src/App.vue', 'src/components/HelloWorld.vue']
+ **/
+function vueFilesIn(dir) {
+    const allContents = fs.readdirSync(dir, { withFileTypes: true });
+    const currFiles =  allContents
+        .filter(f => !f.isDirectory() && f.name.endsWith('.vue'))
+        .map(f => `${dir}/${f.name}`);
+
+    const deeperFiles = allContents
+        .filter(f => f.isDirectory())
+        .map(d => vueFilesIn(`${dir}/${d.name}`))
+        .reduce((acc, d) => acc.concat(d), []); // since arr.flat() doesn't exist in most versions of node, apparently
+
+    return currFiles.concat(deeperFiles);
+}
+
+
+/* routing */
 io.on('connection', (client) => {
-    const posthtmlProcess = (filename, cb) => {
-        fs.readFile(filename, 'utf8', (err, file) => {
-            posthtml().use(cb).process(file)
-                .then(({ html }) => fs.writeFile(filename, html, () => {}))
-        });
-    }
-
-    const jscodeshiftProcess = (filename, cb) => {
-        fs.readFile(filename, 'utf8', (err, file) => {
-            const blocks = parseComponent(file);
-            if (!blocks.script) return;
-            const cmp = new VueComponent(blocks.script.content);
-
-            cb(cmp);
-
-            const newSrc = file.replace(
-                blocks.script.content,
-                cmp.toString()
-            );
-            fs.writeFile(filename, newSrc, () => {});
-        });
-    }
-
     client.on('addPathToAllComponents', () => {
         vueFilesIn('src').forEach(path => {
             jscodeshiftProcess(path, (cmp) => {
@@ -71,29 +105,10 @@ io.listen(3000);
 
 
 /**
- * Recursively finds .vue files in a given directory
- *
- * Returns an array of their paths relative to (and including) the given directory
- * e.g., vueFilesIn('src') => ['src/App.vue', 'src/components/HelloWorld.vue']
+ * These are HTML equivalents of what's in JSUtils.
+ * There's definitely some abstraction waiting to be distilled here.
  **/
-function vueFilesIn(dir) {
-    const allContents = fs.readdirSync(dir, { withFileTypes: true });
-    const currFiles =  allContents
-        .filter(f => !f.isDirectory() && f.name.endsWith('.vue'))
-        .map(f => `${dir}/${f.name}`);
 
-    const deeperFiles = allContents
-        .filter(f => f.isDirectory())
-        .map(d => vueFilesIn(`${dir}/${d.name}`))
-        .reduce((acc, d) => acc.concat(d), []); // since arr.flat() doesn't exist in most versions of node, apparently
-
-    return currFiles.concat(deeperFiles);
-}
-
-function addDataPaletteIds(tree) {
-    let id = 0;
-    addAttr(tree, 'data-palette', () => id++);
-}
 
 /**
  * Adds an attribute to all non-script, non-template tags

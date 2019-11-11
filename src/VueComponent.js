@@ -34,6 +34,7 @@ module.exports = class VueComponent {
         const dataObject = data.find(j.ReturnStatement)
             .find(j.ObjectExpression)
 
+        // I'm 100% positive this logic can be compressed and reused, but I can't see it yet
         let exists = dataObject.find(j.Identifier, { name: key });
         if (exists.length) {
             exists.closest(j.Property)
@@ -71,6 +72,9 @@ module.exports = class VueComponent {
 
     }
 
+    // find and create are attached to the export default declaration
+    // and they deal with object properties
+    // there's gotta be a way to make them more general
     findOrCreate(name, value, overwrites) {
         let node = this.find(name);
 
