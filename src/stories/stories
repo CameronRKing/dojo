@@ -1,0 +1,60 @@
+stories
+    components in context
+
+- wrap with (later: interactive) props
+(later) - save action sequences (UI macros)
+(later) - write assertions
+
+storyquilt:
+    - list all stories
+    - select a story from the tree
+    - loading it adds data-palette ids to the relevant source(s)
+    - display tree view of the tags in the hierarchy
+        = tag + subtle distinguishing features?
+            + v-if, v-show
+            + id
+            + event handlers
+    - keyboard element selection
+        + arrow navigation
+            = up/down: move to parent/child
+            = left/right: move to sibling
+        + tree view (i.e., sidebar)
+        + visible shortcuts (in tree, on page?)
+        + ideally would highlight the source code as you go
+            = and vice versa: hovering over a source code element should highlight the element on the page, just like element exploration in Chrome
+    - keyboard element modification
+        + change classes
+        + change attributes
+            = shortcuts for Vue attributes
+        + change tag
+        + add child
+        + add parent
+        + delete
+
+
+Where are stories saved?
+    - inside the component would be the most compact
+        + inside a new block? or inside the script somehow?
+    - in .story.js (.story.vue?) files next to component
+    - in a single file
+
+How are stories structured?
+    - a story is just a component that mounts a child in a given context
+    - the simplest story is the bare mount
+    - the next simplest is with props
+    - beyond that, you can import/build whole Vue components for whatever you desire
+    (later) - how are actions and assertions saved? what about points of resting state? E.g., instead of asserting that specific things have changed, why not assert that the component's state matches a known configuration (perhaps another story?)
+
+    story('story name', component, ?props)
+
+How do I match a component to its file?
+    - embed file path in the component
+        + webpack has a __filename attribute that can be turned on
+        + I can run a source tree transform that saves the __filename somewhere in the component
+            = use a global plugin, save to option.path, expose as __path
+
+
+
+How do I parse and replace the script content of a .vue file?
+    - there should be only one top-level script element
+    - once I've found it, pulling out and replacing its contents should be easy
