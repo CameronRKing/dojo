@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h1 id="output">Hello, world!</h1>
+</body>
+
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script>
+// https://github.com/socketio/socket.io-client/blob/master/docs/API.md
+var socket = io('http://localhost:3000');
+
+function emit(event, payload) {
+    return new Promise(resolve => {
+        socket.emit(event, payload, resolve);
+    });
+}
+
+</script>
+
+</html>

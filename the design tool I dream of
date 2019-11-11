@@ -1,0 +1,78 @@
+the design tool I dream of
+
+interacting with the styling of a live Vue component via the keyboard
+any changes in the template ripple back to the source code
+use Tailwindcss for ease
+
+1) set up a simple story for a component (mounted with certain props/slots)
+2) display story in-browser
+3) use story editor to . . .
+    a) select DOM node
+    b) update CSS classes
+4) changes get displayed immediately, then relayed back to the source code
+    - by making a call to a server
+
+
+
+
+1) I need a live Vue component with context (i.e., a story) in front of me
+    + simple wrapper that accepts component and props
+2) I need to way to link the textual DOM (in the template of the component) with the visual DOM (what gets rendered)
+3) I need a DSL for editing the Tailwindcss classes on tag
+    - I'm feeling something Vim-like based on logical abbreviations
+(4) I need a way to visualize (mount) several different versions of the same component with different Tailwindcss classes for comparison/exploration
+
+
+~~~
+
+const prettier = require('prettier')
+
+let ast;
+prettier.format('<template><div v-if="true" data-palette="42">{{ msg }}</div><template>', {
+    parser(text, { vue }) {
+        ast = vue(text);
+        return ast;
+    }
+})
+
+
+const posthtml = require('posthtml')
+const html = '<template><div v-if="true" data-palette="42">{{ msg }}</div><template>';
+const h2 = '<template><div v-if="true">{{ msg }}</div></template>';
+const h3 = '<template><div class="justify-content" v-if="true" data-palette="42">{{ msg }}</div><template>';
+const v = '<script>export default {}</script>\n\n<template><div>Hello, world!</div></template>';
+
+
+let ast;
+const t = (text) => {
+    return posthtml().use(tree => {
+        ast = tree;
+        addDataPaletteIds(tree);
+    }).process(text, { sync: true });
+}
+
+
+function addDataPaletteIds(tree) {
+    let id = 0;
+    const addId = (node) => {
+        // this is a weird hack for now. I'm essentially .vue files as .html files
+        // it'd be better if I could modify only the contents of the top-level template tag
+        if (['script', 'template', 'style'].includes(node.tag)) return node;
+
+        if (!node.attrs) node.attrs = {};
+        node.attrs['data-palette'] = id++;
+        return node;
+    }
+    tree.match({ attrs: undefined }, addId);
+    tree.match({ attrs: { 'data-palette': undefined } }, addId);
+}
+
+function removeDataPaletteIds(tree) {
+    tree.match({ attrs: { 'data-palette': /\.*/ } }, (node) => {
+        node.attrs['data-palette'] = undefined;
+        return node;
+    })
+}
+
+let r;
+r = t(h3)
