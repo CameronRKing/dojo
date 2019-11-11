@@ -59,7 +59,6 @@ io.on('connection', (client) => {
     client.on('setClass', ([filename, id, classStr]) => {
         posthtmlProcess(filename, (tree) => {
             findByPaletteId(tree, id, (node) => {
-                console.log(node);
                 if (!node.attrs) node.attrs = {};
                 node.attrs.class = classStr;
                 return node;
