@@ -9,7 +9,7 @@ io.on('connection', (client) => {
     const posthtmlProcess = (filename, cb) => {
         fs.readFile(filename, 'utf8', (err, file) => {
             posthtml().use(cb).process(file)
-                .then(({ html }) => fs.writeFile(filename, newFile), () => {})
+                .then(({ html }) => fs.writeFile(filename, html, () => {}))
         });
     }
 

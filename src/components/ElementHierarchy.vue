@@ -20,19 +20,30 @@ function getVueCmpName(el) {
         .split('.vue')[0];
 }
 
+
+let elementHierarchyVm;
+
 export default {
     props: ['root'],
     name: 'ElementHierarchy',
     components: {
         ElNode: {
             name: 'ElNode',
-            props: ['el', 'nesting'],
-            template: `<div class="ml-2">{{ el.name }}
+            props: ['el'],
+            template: `<div class="ml-2"><span @click="select(el.el)">{{ el.name }}</span>
                 <template v-if="el.children.length">
-                    <ElNode v-for="child in el.children" :el="child" :nesting="nesting + 1" />
+                    <ElNode v-for="(child, idx) in el.children" :el="child" :key="idx" />
                 </template>
             </div>`,
+            methods: {
+                select(el) {
+                    elementHierarchyVm.$emit('select', el);
+                }
+            }
         }
+    },
+    created() {
+        elementHierarchyVm = this;
     },
     computed: {
         hierarchy() {
