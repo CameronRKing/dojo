@@ -1,54 +1,9 @@
 <script>
 import * as stories from '@/stories/index.stories.js';
 import ElementHierarchy from '@/components/ElementHierarchy';
+import { editTailwindClasses, bindShortcuts, unbindShortcuts } from '@/TailwindEditor';
 import Mousetrap from 'mousetrap';
 
-// using postcss, I should be able to:
-    // 1) find all utility classes (even user-added ones)
-    // 2) group them into families based on the property they modify
-    // 3) generate reasonable keyboard shortcuts
-const tailwindShortcuts = {
-    /* display flex */
-    'df': 'flex',
-    'dfr': 'flex-row-reverse',
-    'dfc': 'flex-column',
-    'dfcr': 'flex-column-reverse',
-    /* justify content */
-    'js': 'justify-start',
-    'jc': 'justify-center',
-    'je': 'justify-end',
-    'ja': 'justify-around',
-    'jb': 'justify-between',
-    /* align items */
-    'is': 'items-start',
-    'ir': 'items-stretch',
-    'ic': 'items-center',
-    'ie': 'items-end',
-    'ib': 'items-baseline',
-};
-
-function containsTailwindFamilyMember(list, givenClass) {
-    const prefix = givenClass.split('-').slice(0, -1).join('-');
-
-    return Array.from(list).find(name => name.startsWith(prefix));
-}
-
-function bindTailwindShortcuts(vm) {
-    Object.keys(tailwindShortcuts)
-        .forEach((shortcut) =>
-            Mousetrap.bind(
-                shortcut.split('').join(' ') + ' space',
-                () => vm.updateTailwindClasses(tailwindShortcuts[shortcut])
-            )
-        );
-}
-
-function unbindTailwindShortcuts() {
-    Object.keys(tailwindShortcuts)
-        .forEach((shortcut) => {
-            Mousetrap.unbind(shortcut + ' ');
-        })
-}
 
 export default {
     components: {
@@ -57,14 +12,14 @@ export default {
     },
     data() {
         return {
+            focused: 'storylist',
+            highlightedStory: 0,
             selectedStory: null,
             storyLoaded: false,
             selectedElement: null,
             parentComponent: null,
+            parsedCmp: null,
         };
-    },
-    created() {
-        window.vm = this;
     },
     computed: {
         storyNames() {
@@ -76,6 +31,42 @@ export default {
             }
             return this.parentComponent.$options.path.split('?')[0];
         }
+    },
+    created() {
+        window.stories = this;
+        const dec = (val) => { if (val > 0) val--; };
+        const inc = (val, arr) => { if (val < arr.length) val++; };
+        Mousetrap.bind('up', () => {
+            if (this.focused == 'storylist') {
+                dec(this.highlightedStory);
+            }
+        })
+
+        Mousetrap.bind('enter', () => {
+            if (this.focused == 'storylist') {
+                this.selectStory(this.storyNames[this.highlightedStory]);
+            }
+        })
+
+        Mousetrap.bind('down', () => {
+            if (this.focused == 'storylist') {
+                inc(this.highlightedStory, this.storyNames);
+            }
+
+            // if (this.focused == 'elements') {
+            //     inc(this.highlightedElement, this.)
+            // }
+        })
+
+    },
+    watch: {
+        async cmpPath(path) {
+            if (path.length) {
+                this.parsedCmp = new VueComponent(await fs.read(path));
+            } else {
+                this.parsedCmp = null;
+            }
+        },
     },
     methods: {
         selectStory(name) {
@@ -103,34 +94,10 @@ export default {
             this.selectedElement = el;
             this.parentComponent = vueParent;
             this.$socket.emit('addPaletteIds', this.cmpPath);
-            bindTailwindShortcuts(this);
+            bindShortcuts((newClass) => {
+                editTailwindClasses(this.parsedCmp, this.selectedElement, newClass);
+            });
         },
-        updateTailwindClasses(givenClass) {
-            const list = this.selectedElement.classList;
-            // if it's already there, typing the class shortcut deletes it
-            if (list.contains(givenClass)) {
-                list.remove(givenClass);
-            } else {
-                // if there's a class from the same family, this one replaces it
-                const familyMember = containsTailwindFamilyMember(list, givenClass);
-                if (familyMember) {
-                    list.replace(familyMember, givenClass);
-                } else {
-                    // if it's not there and there's nothing like it, throw it on the pile
-                    list.add(givenClass);
-                }
-            }
-
-
-            this.updateClasses(this.selectedElement.className);
-        },
-        updateClasses(classStr) {
-            this.$socket.emit('setClass', [
-                this.cmpPath,
-                this.selectedElement.getAttribute('data-palette'),
-                classStr
-            ]);
-        }
     },
     path: __filename
 };
@@ -140,10 +107,14 @@ export default {
 
 <template>
 <div class="flex justify-start">
-    <ul>
-        <li v-for="name in storyNames" @click="selectStory(name)">{{ name }}</li>
+    <ul @focus="focused = 'storylist'">
+        <li v-for="(name, idx) in storyNames" @click="selectStory(name)" :class="{'bg-gray-200': idx == highlightedStory}">{{ name }}</li>
     </ul>
-    <ElementHierarchy v-if="storyLoaded" :root="$refs.story.$el" @select="selectElement"/>
+    <ElementHierarchy v-if="storyLoaded"
+        ref="els"
+        :root="$refs.story.$el"
+        @select="selectElement"
+    />
     <component v-if="selectedStory" :is="selectedStory" ref="story" />
     <!-- first, display all stories to left -->
     <!-- once one is selected, display navigation sidebar -->

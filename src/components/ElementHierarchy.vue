@@ -1,4 +1,7 @@
 <script>
+// todo: get element keyboard selection working
+import Mousetrap from 'mousetrap';
+
 function isVueCmp(el) {
     return el.__vue__ !== undefined;
 }
@@ -20,44 +23,38 @@ function getVueCmpName(el) {
         .split('.vue')[0];
 }
 
-
-let elementHierarchyVm;
-
 export default {
-    props: ['root'],
-    name: 'ElementHierarchy',
-    components: {
-        ElNode: {
-            name: 'ElNode',
-            props: ['el'],
-            template: `<div class="ml-2"><span @click="select(el.el)">{{ el.name }}</span>
-                <template v-if="el.children.length">
-                    <ElNode v-for="(child, idx) in el.children" :el="child" :key="idx" />
-                </template>
-            </div>`,
-            methods: {
-                select(el) {
-                    elementHierarchyVm.$emit('select', el);
-                }
-            }
-        }
-    },
-    created() {
-        elementHierarchyVm = this;
-    },
+    props: ['root', 'highlighted', 'selected'],
+    name: 'ElNode',
     computed: {
         hierarchy() {
             return this.nodeify(this.root);
+        },
+        list() {
+            return this.listify(this.root);
         }
     },
+    created() {
+        const binder = Mousetrap.bind(this.$refs.list);
+    },
     methods: {
+        // how do I do keyboard selection of these elements?
+        // I can pass down "highlighted" and "selected" props 
         nodeify(el) {
+            if (el.el && el.name) {
+                return el;
+            }
             return {
                 el,
                 name: name(el),
                 children: Array.from(el.children).map(c => this.nodeify(c))
             }
         },
+        listify(el, nesting=0) {
+            return [{ el, name: name(el), nesting }]
+                .concat(Array.from(el.children).map(c => this.listify(c, nesting + 1)))
+                .flat();
+        }
     },
     path: __filename
 };
@@ -66,7 +63,10 @@ export default {
 
 
 <template>
-<div class="text-left">
-    <ElNode :el="hierarchy" :nesting="0" />
-</div>
+<ul class="text-left" ref="list">
+    <li v-for="({ el, name, nesting }, idx) in list"
+        :style="{'padding-left': nesting * 8 + 'px'}"
+        :class="{'bg-gray-200': highlighed == idx, 'bg-gray-400': selected == idx }"
+    >{{ name }}</li>
+</ul>
 </template>

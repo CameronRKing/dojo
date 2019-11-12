@@ -25,18 +25,29 @@ function assocIn(modified, toAdd) {
     });
 }
 
-module.exports = class VueComponent {
+export default class VueComponent {
     constructor(text) {
-        posthtml().process(text).then(results => {
-            this.results = results;
-            this.htmlAst = results.tree;
-            this.script = undefined;
-            results.tree.match({ tag: 'script' }, node => {
-                this.scriptNode = node;
-                this.script = j(node.contents);
+        this.isDone = new Promise(resolve => {
+            posthtml().process(text).then(results => {
+                this.results = results;
+                this.tree = results.tree;
+                this.script = undefined;
+                results.tree.match({ tag: 'script' }, node => {
+                    this.scriptNode = node;
+                    this.script = j(node.content[0]);
+                    return node;
+                });
+                resolve()
             });
-
         });
+    }
+
+    ready() {
+        return this.isDone;
+    }
+
+    ping() {
+        console.log(this, this.script)
     }
 
     setData(key, value) {
@@ -164,13 +175,19 @@ module.exports = class VueComponent {
     }
 
     addPath() {
-        cmp.findOrCreate('path', j.identifier('__filename'));
+        this.findOrCreate('path', j.identifier('__filename'));
+    }
+
+    pings() {
+        console.log(toSource(this.script));
     }
 
     toString() {
-        hast.tree.match({ tag: 'script ' }, node => {
-            node.contents = toSource(this.script);
+        this.tree.match({ tag: 'script' }, node => {
+            this.pings();
+            node.content = [toSource(this.script)];
+            return node;
         });
-        return hast.html;
+        return this.results.html;
     }
 }

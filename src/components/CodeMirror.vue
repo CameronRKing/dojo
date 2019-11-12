@@ -25,10 +25,10 @@ export default {
     methods: {
         getFile(path) {
             this.currPath = path;
-            fs.read(path).then(file => this.file = file);
+            return fs.read(path).then(file => this.file = file);
         },
         setFile() {
-            fs.write([this.currPath, this.file]);
+            return fs.write([this.currPath, this.file]);
         }
     }
 }
