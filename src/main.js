@@ -5,27 +5,19 @@ import store from './store'
 
 Vue.config.productionTip = false
 
-window.socket = io('http://localhost:3000');
+import { socket, emit } from '@/socket-client';
+window.socket = socket;
+window.emit = emit;
 Vue.use({
     install(Vue) {
         Vue.prototype.$socket = socket;
     }
 });
 
-window.emit = (event, args) => {
-    return new Promise(resolve => socket.emit(event, args, resolve));
-}
-
-window.fs = {
-    read(path) {
-        return emit('read', path);
-    },
-    write(path, str) {
-        return emit('write', [path, str]);
-    },
-}
-
-window.toMount = App;
+import fs from '@/fs-client';
+import CodeMirror from '@/components/CodeMirror.vue';
+window.fs = fs;
+window.toMount = CodeMirror;
 window.mt = async (cmp) => {
     if (typeof cmp == 'string') {
         toMount = (await import(`./${cmp}`)).default;
@@ -33,7 +25,6 @@ window.mt = async (cmp) => {
         toMount = cmp;
     }
     root.$forceUpdate();
-    console.log(toMount);
 }
 
 // what I need to do:
