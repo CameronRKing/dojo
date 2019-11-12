@@ -3,6 +3,10 @@ import * as stories from '@/stories/index.stories.js';
 import ElementHierarchy from '@/components/ElementHierarchy';
 import Mousetrap from 'mousetrap';
 
+// using postcss, I should be able to:
+    // 1) find all utility classes (even user-added ones)
+    // 2) group them into families based on the property they modify
+    // 3) generate reasonable keyboard shortcuts
 const tailwindShortcuts = {
     /* display flex */
     'df': 'flex',

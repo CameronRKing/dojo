@@ -1,6 +1,6 @@
 <template>
   <button class="button is-primary" @click="onClick">
-    <slot></slot>
+    <slot>Default text!</slot>
   </button>
 </template>
 

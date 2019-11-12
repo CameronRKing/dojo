@@ -8,8 +8,8 @@ export default {
 
 
 <template>
-    <div class="h-1 w-full" :class="{'bg-green-200': !noBackground}">
-        <div class="h-1 bg-green-400 progress-bar" :style="{width: progress * 100 + '%'}"></div>
+    <div class="h-1 w-full" :class="{'bg-green-200': !noBackground}" data-palette="0">
+        <div class="h-1 bg-green-400 progress-bar" :style="{width: progress * 100 + '%'}" data-palette="1"></div>
     </div>
 </template>
 

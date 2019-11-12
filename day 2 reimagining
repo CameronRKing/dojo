@@ -1,0 +1,92 @@
+based on what I learned yesterday, I'm gonna pivot on the infrastructure.
+
+Instead of a language server, I think it'd be cool if:
+    1) editing
+    2) parsing
+    3) displaying
+    4) testing
+    5) process management (command line with better interface for long-running processes and script saving)
+all coexisted in the same process.
+
+I wish my editor came with a REPL, and a plugins system built on top of these primitives
+    - look, I'm not gonna know every which way code needs to be handled. providing an opinionated API is not my value.
+    - providing an elegant infrastructure for ad hoc process integration is
+
+The crowning meta-feature will be meta-editing. You'll be able to query and manipulate the visual structure of the IDE through your REPL. The visual components you build will have full access to the base process environment.
+
+
+EDITOR
+    - set buffer
+    - get buffer
+    - create/edit/delete story
+    - create/edit/delete test
+
+PARSER
+    - parse from buffer
+    - print to buffer
+
+RUNNER
+    - view story list
+    - mount story
+
+TESTER
+    - run actions, capture state
+
+
+I'm going to have to leave Sublime. To have it all in-process, I can either:
+    1) built a website served by webpack
+    2) build it in Electron
+
+I don't know Electron. I have three and a half days left.
+This doesn't need to be the final product, just the next iteration.
+
+1) The REPL: the console
+2) parsing:
+    - will jscodeshift, posthtml, and postcss run in-browser?
+    ! YES !
+
+
+The editor speaks to the filesystem to get source text.
+The editor passes that text to the parser.
+The parser passes back text to the editor.
+The editor chooses what to do with that text (save it in this file, a new file, a scratch buffer)
+
+
+The infrastructure code should be bare minimum:
+    "load this file which serves as the main.js of your app."
+Then we just need to provide a reasonable default main.js
+All the packages are plain JS modules (or Vue components) that you import.
+You can rewrite the source of the app by editing main.js and the files it imports.
+
+What packages do I want?
+    - a wrapper around CodeMirror that:
+        1) sets buffer text
+        2) gets buffer text
+    - reading/writing files on my computer
+        - so there does need to be a connection to a node server for doing things that can't happen in-browser
+        - basic transport is socket.io
+            + server plugins should expose a set of namespaced endpoints attached to actions.
+    - a way to mount arbitrary components into the editor
+        + using webpack? it has dynamic imports, right?
+        + mount(cmp, location=root)
+            - components should offer mount points (slots) for more control
+            - e.g., the paning component should offer a mount point for each pane 
+    - a component for displaying stories
+    - a component for wrapping stories with navigation and editing facilities
+        + Zephyr: interactive Tailwindcss
+    - a component for running tests
+        + on command
+        + reactively
+    - connections among these things
+
+
+CodeMirror will be wrapped behind a Vue component that exposes a certain API
+    and accepts a filesystem dependency
+The editor provides a paning system for mounting these components
+    - or rather, there will be a plugin that provides a paning system.
+
+
+The parser will work the same way. It'll look for 
+
+The editor can choose to display a browser window.
+Its contents are built by a webpack server with hot reloading.

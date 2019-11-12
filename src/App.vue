@@ -1,4 +1,8 @@
 <script>
+import j from 'jscodeshift';
+import posthtml from 'posthtml';
+import postcss from 'postcss';
+
 export default {
     created() {
       window.vm = this;
