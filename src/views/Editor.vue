@@ -1,6 +1,6 @@
 <script>
-import * as stories from '@/stories/index.stories.js';
 import ElementHierarchy from '@/components/ElementHierarchy';
+import ComponentList from '@/components/ComponentList';
 import { editTailwindClasses, bindShortcuts, unbindShortcuts } from '@/TailwindEditor';
 import Mousetrap from 'mousetrap';
 import VList from '@/components/VList';
@@ -22,7 +22,7 @@ function getVueParent(el) {
 
 export default {
     components: {
-        ...stories,
+        ComponentList,
         ElementHierarchy,
         VList,
     },
@@ -59,15 +59,8 @@ export default {
         },
     },
     methods: {
-        selectStory(name) {
-            this.selectedStory = name;
-            this.$nextTick().then(() => {
-                // I was having problems with the v-if on ElementHierarchy
-                // v-if="selectedStory" was reading as true before the $ref was set
-                // v-if="$refs.story" wasn't updating
-                // (but I was probably doing something wrong)
-                this.storyLoaded = true;
-            });
+        async selectCmp(path) {
+            this.selectedStory = (await import('../' + path.replace('src/', ''))).default;
         },
         selectElement(el) {
             this.selectedElement = el;
@@ -86,10 +79,8 @@ export default {
 
 <template>
 <div class="flex justify-start">
-    <VList :list="storyNames" @select="selectStory">
-        <template slot-scope="{ item }">{{ item }}</template>
-    </VList>
-    <ElementHierarchy v-if="storyLoaded"
+    <ComponentList @select="selectCmp" />
+    <ElementHierarchy v-if="$refs.story"
         :root="$refs.story.$el"
         @select="selectElement"
     />

@@ -30,7 +30,7 @@ export default {
         })
     },
     destroyed() {
-        this.mousetrap.unbind();
+        this.mousetrap.reset();
     },
     methods: {
         itemClass(item, idx) {
@@ -49,7 +49,7 @@ export default {
 <template>
 <ul ref="list" class="text-left">
     <li v-for="(item, idx) in list" :class="itemClass(item, idx)" @hover="highlighted = idx" @click="selected = item">
-        <slot v-bind="{ item }"></slot>
+        <slot v-bind="{ item }">{{ item }}</slot>
     </li>
 </ul>
 </template>

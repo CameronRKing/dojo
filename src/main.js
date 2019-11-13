@@ -31,6 +31,10 @@ window.mt = async (cmp) => {
     root.$forceUpdate();
 }
 
+
+window.getCmp = async (cmp) => {
+    return (await import(`./${cmp}`)).default;
+}
 // done
     // 1) parameterize the render function so that I can change what it returns via "mt(cmp)"
         // or "mt('path/to/cmp')"
