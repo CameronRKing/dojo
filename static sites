@@ -1,0 +1,108 @@
+"A complex system that works is invariably found to have evolved from a simple system that works."
+
+Instead of trying to support all Vue functionality all at once, why not start with simple DOM manipulation?
+
+Then we can build on top of it one feature at a time as needed.
+
+Narrowing the scope means I can make a lot of simplifying assumptions.
+
+For instance, if I'm only supporting bare Vue components with template, data, and maybe props, then I can compile them in-browser. Webpack won't need to do anything. Actually, I'd have to figure out component imports myself--unless all components are registered globally?
+
+It's worth taking time to explore in-browser compilation. If I can get it working, then Codey won't need to install anything on his computer other than the editor itself (which I can serve as a website from my computer and give him access to through ngrok for now, and later figure out how to serve as a static site.
+
+
+SKETCH 1:
+    1) all components are stored in a global object
+        - we could accomplish simple nesting by checking if the object attached to a key is a Vue component, and if it isn't, treating it as a folder
+    2) components contain only two attributes for now: data and template
+    3) when a component is updated, we need to update its registration
+        - will all components on the page update when registration is updated?
+        ! NO !
+        looks like I do have to rely on webpack to reload changed components. that's not so bad.
+        or, I could replace every component instance with a component mounter (which I think I could figure out). that seems like a lot of unnecessary complexity, though.
+
+SKETCH 2:
+    1) link to a folder on the filesystem
+    2) load/save Vue components from this folder
+    3) updating a component updates its source
+    4) the site is served by webpack, so all instances will update automagically
+    5) if props aren't a thing, then we can mount all components directly (no need for stories)
+
+
+EDITING:
+    select element(s)
+        - ctrl+shift+s to select at top-level scope (i.e., throw everything away)
+        - tab to exit
+        - use enter to select a single element
+        - use shift + arrow keys to select multiple (can't escape nesting)
+
+    ONCE A SELECTION IS MADE:
+        cancel selection
+            - tab (keep highlight on current element)
+        select child
+            - s (same as normal selection, but nested; escape to exit)
+        add child
+            - a tag.class1.class2
+        remove
+            - d
+        edit classes
+            - c
+
+    - keyboard signifiers
+    - actions
+    - inputs
+    - headers
+    - modes
+
+Modes (states) seem like the key abstraction here.
+They don't belong as methods on the Vue component.
+Rather, they should define entrypoints, actions, and exit points.
+Then all the Vue component has to do is load the starter mode.
+
+select(nodeList)
+    + up: move selection up
+    + down: move selection down
+    + shift: select multiple
+    + enter: confirm  -> edit(selection)
+
+edit(selection)
+    + cancel
+    + add child -> add(selection)
+    + delete
+    + edit classes -> edit-classes(selection)
+
+add(selection)
+    + cancel
+    + enter tag name, id, classes
+    + confirm & create -> edit(newNode)
+
+edit-classes(selection)
+    + cancel
+    + hover over shortcuts to see classes/properties
+    + browse available shortcuts/classes
+    + toggle class/replace family member
+    + confirm & save -> edit(selection)
+
+New modes get pushed onto a stack.
+Modes get popped when canceled or finished.
+
+
+What is the link between modes and UI?
+How do I represent modes?
+    - why not Vue components?
+    - simple modes that don't need custom UI could be data-built from helper functions (e.g., menu([{shortcut, label, action}]))
+        + I'll discover the helper functions as I go. don't worry about them for now. build everything as you need it and refactor mercilessly.
+How are modes dropped onto the page?
+    - inside the previous mode component?
+    - flat on the page, all in a line?
+    + consider that there's only one active mode at a time,
+        but we may want to see data from or quickly jump to other modes
+
+    1) selection mode should always be visible
+    2) the various editing modes should supplant one another
+        - though I imagine more complicated modes may keep exploding rightward
+        - when moving to a new mode, we could indicate whether the new mode should replace the current UI or be added to it
+        - if we think of mode UI in "mode containers", it's a question of changing the contents of the container or creating a new one, where "replace" is the default option
+    3) how does selection mode work?
+        - the instructions should be in the same place as the rest of the mode info, but the UI it controls is next to it.
+            + why not pass a ref to the list to the selection mode? then it can bind to keyboard shortcuts on its own and call methods on the list to trigger changes.

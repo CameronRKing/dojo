@@ -1,6 +1,6 @@
 <script>
 export default {
-    
+    path: __filename    
 }
 </script>
 

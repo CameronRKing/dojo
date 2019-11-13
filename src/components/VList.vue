@@ -2,7 +2,10 @@
 import Mousetrap from 'mousetrap';
 
 export default {
-    props: ['list'],
+    props: {
+        list: {},
+        selectable: { default: true }
+    },
     data() {
         return {
             mousetrap: null,
@@ -39,6 +42,19 @@ export default {
                 'bg-gray-200': this.highlighted == idx && !isSelected,
                 'bg-gray-400': isSelected,
             }
+        },
+        defaultDisplay(item) {
+            let str;
+            try {
+                // I don't understand why, but the default content was attempting to render
+                // even though I had something else I wanted to display in its place
+                // the default content included a reference to a Vue component instance,
+                // which has at least one circular reference that errors out in JSON.stringify
+                str = JSON.stringify(item);
+            } catch (e) {
+                return '';
+            }
+            return item;
         }
     }
 }
@@ -48,8 +64,8 @@ export default {
 
 <template>
 <ul ref="list" class="text-left">
-    <li v-for="(item, idx) in list" :class="itemClass(item, idx)" @hover="highlighted = idx" @click="selected = item">
-        <slot v-bind="{ item }">{{ item }}</slot>
+    <li v-for="(item, idx) in list" class="p-2" :class="itemClass(item, idx)" @hover="highlighted = idx" @click="selected = item">
+        <slot v-bind="{ item }">{{ defaultDisplay(item) }}</slot>
     </li>
 </ul>
 </template>
