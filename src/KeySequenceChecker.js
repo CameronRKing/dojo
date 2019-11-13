@@ -11,6 +11,7 @@ const modKeys = modifiers.map(m => m.key);
 const bindings = modifiers.map(m => m.binding);
 
 export default class KeySequenceChecker {
+    // todo: prevent event bubbling
     constructor(el, sequence='', { success, failure }) {
         this.el = el;
         this.el.addEventListener('keydown', (e) => this.handleKeydown(e));

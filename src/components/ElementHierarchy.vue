@@ -1,6 +1,5 @@
 <script>
-// todo: get element keyboard selection working
-import Mousetrap from 'mousetrap';
+import VList from '@/components/VList';
 
 function isVueCmp(el) {
     return el.__vue__ !== undefined;
@@ -24,32 +23,21 @@ function getVueCmpName(el) {
 }
 
 export default {
-    props: ['root', 'highlighted', 'selected'],
-    name: 'ElNode',
+    components: {
+        VList
+    },
+    props: ['root', 'selected'],
+    data() {
+        return {
+            highlighted: 0,
+        };
+    },
     computed: {
-        hierarchy() {
-            return this.nodeify(this.root);
-        },
         list() {
             return this.listify(this.root);
         }
     },
-    created() {
-        const binder = Mousetrap.bind(this.$refs.list);
-    },
     methods: {
-        // how do I do keyboard selection of these elements?
-        // I can pass down "highlighted" and "selected" props 
-        nodeify(el) {
-            if (el.el && el.name) {
-                return el;
-            }
-            return {
-                el,
-                name: name(el),
-                children: Array.from(el.children).map(c => this.nodeify(c))
-            }
-        },
         listify(el, nesting=0) {
             return [{ el, name: name(el), nesting }]
                 .concat(Array.from(el.children).map(c => this.listify(c, nesting + 1)))
@@ -63,10 +51,7 @@ export default {
 
 
 <template>
-<ul class="text-left" ref="list">
-    <li v-for="({ el, name, nesting }, idx) in list"
-        :style="{'padding-left': nesting * 8 + 'px'}"
-        :class="{'bg-gray-200': highlighed == idx, 'bg-gray-400': selected == idx }"
-    >{{ name }}</li>
-</ul>
+<VList :list="list">
+    <span slot-scope="{ item }" :style="{'padding-left': item.nesting * 8 + 'px'}">{{ item.name }}</span>
+</VList>
 </template>
