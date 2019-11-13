@@ -22,26 +22,23 @@ function getVueCmpName(el) {
         .split('.vue')[0];
 }
 
+// performs a depth-first search
+// returns an array that contains an object for each node
+// object contins the element, the name of element, and its nesting depth
+function listify(el, nesting=0) {
+    return [{ el, name: name(el), nesting }]
+        .concat(Array.from(el.children).map(c => listify(c, nesting + 1)))
+        .flat();
+}
+
 export default {
     components: {
         VList
     },
-    props: ['root', 'selected'],
-    data() {
-        return {
-            highlighted: 0,
-        };
-    },
+    props: ['root'],
     computed: {
         list() {
-            return this.listify(this.root);
-        }
-    },
-    methods: {
-        listify(el, nesting=0) {
-            return [{ el, name: name(el), nesting }]
-                .concat(Array.from(el.children).map(c => this.listify(c, nesting + 1)))
-                .flat();
+            return listify(this.root);
         }
     },
     path: __filename

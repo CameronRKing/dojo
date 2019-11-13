@@ -28,8 +28,6 @@ export default {
     },
     data() {
         return {
-            focused: 'storylist',
-            highlightedStory: 0,
             selectedStory: null,
             storyLoaded: false,
             selectedElement: null,
@@ -47,9 +45,6 @@ export default {
             }
             return this.parentComponent.$options.path.split('?')[0];
         },
-        elementList() {
-            return this.listify(this.$refs.story.$el);
-        }
     },
     created() {
         window.stories = this;
@@ -82,11 +77,6 @@ export default {
                 editTailwindClasses(this.parsedCmp, this.selectedElement, newClass);
             });
         },
-        listify(el, nesting=0) {
-            return [{ el, name: name(el), nesting }]
-                .concat(Array.from(el.children).map(c => this.listify(c, nesting + 1)))
-                .flat();
-        }
     },
     path: __filename
 };
@@ -103,11 +93,6 @@ export default {
         :root="$refs.story.$el"
         @select="selectElement"
     />
-<!--     <ElementHierarchy v-if="storyLoaded"
-        ref="els"
-        :root="$refs.story.$el"
-        @select="selectElement"
-    /> -->
     <component v-if="selectedStory" :is="selectedStory" ref="story" />
     <!-- first, display all stories to left -->
     <!-- once one is selected, display navigation sidebar -->
