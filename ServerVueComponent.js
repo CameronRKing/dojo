@@ -70,7 +70,8 @@ function assocIn(modified, toAdd) {
         modified[key] = toAdd[key];
     });
 }
-export default class VueComponent {
+
+module.exports = class VueComponent {
     constructor(text) {
         this.isDone = new Promise(resolve => {
             posthtml().process(text).then(results => {
@@ -93,10 +94,6 @@ export default class VueComponent {
 
     ping() {
         console.log(this, this.script)
-    }
-
-    pings() {
-        console.log(toSource(this.script));
     }
 
     setData(key, value) {
@@ -227,8 +224,13 @@ export default class VueComponent {
         this.findOrCreate('path', j.identifier('__filename'));
     }
 
+    pings() {
+        console.log(toSource(this.script));
+    }
+
     toString() {
         this.tree.match({ tag: 'script' }, node => {
+            this.pings();
             node.content = [toSource(this.script)];
             return node;
         });

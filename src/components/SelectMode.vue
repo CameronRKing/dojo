@@ -1,29 +1,31 @@
 <script>
-import Mousetrap from 'mousetrap';
+import BaseMode from './BaseMode.js';
+import NodeLink from '@/NodeLink.js';
 
 export default {
+    mixins: [BaseMode],
     props: ['elList'],
-    data() {
-        return {
-            prompts: [
-                ['up/down', 'change selection'],
-                ['enter', 'confirm selection']
-            ]
-        };
+    prompts: [
+        ['up/down', 'change selection'],
+        ['enter', 'confirm selection']
+    ],
+    bindings: {
+        up() { this.elList.moveCursorUp(); },
+        down() { this.elList.moveCursorDown(); },
+        enter() { this.confirmSelection(); },
     },
-    mounted() {
-        Mousetrap.bind('up', () => this.elList.moveCursorUp());
-        Mousetrap.bind('down', () => this.elList.moveCursorDown());
-        Mousetrap.bind('enter', () => this.confirmSelection());
+    teardown({ selection }) {
+        selection.removeDataIds();
     },
     methods: {
         confirmSelection() {
-            console.log('emitting');
+            const selection = new NodeLink(this.elList.selectUnderCursor().el);
+            selection.ready().then(() => selection.addDataIds());
             this.$emit('new-mode', {
-                mode: 'edit',
-                selection: this.elList.selectUnderCursor()
+                mode: 'Edit',
+                args: { selection }
             });
-        }
+        },
     }
 }
 </script>

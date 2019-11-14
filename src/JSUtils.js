@@ -5,7 +5,7 @@ function contains(point) {
 }
 
 // this needs to be a lot more flexible  
-export function toSource(jSrc) {
+function toSource(jSrc) {
     return jSrc.toSource({ quote: 'single', lineTerminator: '\n', tabWidth: 4, arrowParensAlways: true })
         // Recast seperates multiline object properties by an extra newline on both sides
         // https://github.com/benjamn/recast/issues/242
@@ -15,13 +15,13 @@ export function toSource(jSrc) {
 }
 
 
-export function object(obj={}) {
+function object(obj={}) {
     return j.objectExpression(
         Object.keys(obj).map(key => objectProperty(key, obj[key]))
     )
 }
 
-export function objectProperty(key, value) {
+function objectProperty(key, value) {
     return j.property('init', j.identifier(key), parseValue(value));
 }
 
@@ -43,7 +43,7 @@ function parseValue(value) {
 }
 
 // is that really the best way to check?
-export function isNode(value) {
+function isNode(value) {
     return typeof value.get == 'function';
 }
 
@@ -156,4 +156,5 @@ const toFnAt = (src, idx, cb) => {
     return toSource(jSrc);
 }
 
-export default wrappedRoutes;
+Object.keys()
+function wrappedRoutes;

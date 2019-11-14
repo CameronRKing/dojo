@@ -13,7 +13,7 @@ function readAll(filenames) {
     return Promise.all(filenames.map(read));
 }
 
-function write(filename, contents) {
+function write([filename, contents]) {
     return new Promise((resolve, reject) => {
         fs.writeFile(filename, contents, 'utf8', (err, str) => {
             if (err) reject(err);
