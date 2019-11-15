@@ -12,6 +12,7 @@ export default {
         this.bindings = this.$options.bindings;
     },
     mounted() {
+        if (this.$refs.input) this.$refs.input.focus();
         Object.keys(this.bindings).forEach(shortcut => {
             Mousetrap.bind(shortcut, this.bindings[shortcut].bind(this))
         });

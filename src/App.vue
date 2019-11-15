@@ -4,9 +4,6 @@ import posthtml from 'posthtml';
 import postcss from 'postcss';
 
 export default {
-    created() {
-      window.vm = this;
-    },
     path: __filename
 };
 </script>

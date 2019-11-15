@@ -7,5 +7,8 @@ export default {
 
 
 <template>
-    <div>Hello, world!</div>
+<div data-palette="0">
+    <div data-palette="1">Hello, world!</div>
+    <div data-palette="2">Goodbye, all!</div>
+</div>
 </template>

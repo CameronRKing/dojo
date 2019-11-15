@@ -140,6 +140,19 @@ module.exports = class VueComponent {
 
     }
 
+    getNextDataId() {
+        let nodes = [];
+        this.tree.match({ attrs: { 'data-palette': /.*/ } }, node => {
+            nodes.push(node);
+            return node;
+        });
+        const ids = nodes.map(n => Number(n.attrs['data-palette']));
+
+        if (!ids.length) return 0;
+
+        return Math.max.apply(null, ids) + 1;
+    }
+
     // find and create are attached to the export default declaration
     // and they deal with object properties
     // there's gotta be a way to make them more general
@@ -206,8 +219,10 @@ module.exports = class VueComponent {
      * What it says on the box; idealy should come with some sort of filter
      **/
     removeAttr(attr) {
-        this.tree.match({ attrs: { [attr]: /\.*/ } }, (node) => {
-            node.attrs[attr] = undefined;
+        this.tree.walk((node) => {
+            if (node.attrs && node.attrs[attr]) {
+                node.attrs[attr] = null;
+            }
             return node;
         });
     }
@@ -230,7 +245,6 @@ module.exports = class VueComponent {
 
     toString() {
         this.tree.match({ tag: 'script' }, node => {
-            this.pings();
             node.content = [toSource(this.script)];
             return node;
         });

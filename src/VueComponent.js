@@ -205,12 +205,28 @@ export default class VueComponent {
         this.tree.match({ attrs: { 'data-palette': id } }, cb);
     }
 
+    getNextDataId() {
+        let nodes = [];
+        this.tree.match({ attrs: { 'data-palette': /.*/ } }, node => {
+            nodes.push(node);
+            return node;
+        });
+        const ids = nodes.map(n => Number(n.attrs['data-palette']));
+
+        if (!ids.length) return 0;
+
+        return Math.max.apply(null, ids) + 1;
+    }
+
     /**
      * What it says on the box; idealy should come with some sort of filter
      **/
     removeAttr(attr) {
-        this.tree.match({ attrs: { [attr]: /\.*/ } }, (node) => {
-            node.attrs[attr] = undefined;
+        // I have no idea why, but using match instead of walk didn't work
+        // match would miss nodes!
+        this.tree.walk((node) => {
+            if (node.attrs && node.attrs[attr])
+                node.attrs[attr] = undefined;
             return node;
         });
     }

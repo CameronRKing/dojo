@@ -1,4 +1,25 @@
 <script>
+function name(el) {
+    if (el.__vue__) {
+        return vueCmpName(el.__vue__);
+    }
+    return el.localName;
+}
+
+function vueCmpName(cmp) {
+    if (!path(cmp)) {
+        return '< Anonymous: no path option set >';
+    }
+    return path(cmp).split('\\')
+        .slice(-1)[0]
+        .split('.vue')[0];
+}
+
+// returns the path to the component's source file, if relevant
+function path(cmp) {
+    return cmp.$options.path.split('?')[0];
+}
+
 // performs a depth-first search
 // returns an array that contains an object for each node
 // object contins the element, the name of element, and its nesting depth
@@ -12,31 +33,44 @@ export default {
     props: ['root'],
     data() {
         return {
-            selections: [],
+            list: [],
             highlighted: 0,
             selected: null,
+            selectedIdx: null,
         };
     },
-    computed: {
-        list() {
-            return listify(this.root);
-        }
+    created() {
+        this.updateNodeList();
     },
     methods: {
-        moveCursorUp() {
-            if (this.highlighted < this.list.length - 1)
-                this.highlighted++;
+        cancelSelection() {
+            this.selected = null;
+            this.selectedIdx = null;
         },
-        moveCursorDown() {
+        updateNodeList() {
+            this.list = listify(this.root());
+        },
+        moveCursorUp() {
             if (this.highlighted > 0)
                 this.highlighted--;
         },
+        moveCursorDown() {
+            if (this.highlighted < this.list.length - 1)
+                this.highlighted++;
+        },
         selectUnderCursor() {
+            this.selectedIdx = this.highlighted;
             this.selected = this.list[this.highlighted];
             return this.selected;
         },
+        updateSelection(el) {
+            const idx = this.list.map(e => e.el).indexOf(el);
+            this.highlighted = idx;
+            this.selectedIdx = idx;
+            this.selected = this.list[idx];
+        },
         nodeClass(node, idx) {
-            const isSelected = this.selected == node;
+            const isSelected = this.selectedIdx == idx;
             return {
                 'bg-gray-200': this.highlighted == idx && !isSelected,
                 'bg-gray-400': isSelected,

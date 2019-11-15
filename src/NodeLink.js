@@ -31,7 +31,7 @@ function vueParent(el) {
     } while (!vueParent && node)
 
     if (!vueParent) {
-        throw new Error('unable to find a Vue component in the hierarchy above ', el);
+        throw new Error('unable to find a Vue component in the hierarchy above data-palette=' + el.getAttribute('data-palette'));
     }
     return vueParent;
 }
@@ -39,8 +39,8 @@ function vueParent(el) {
 export default class Nodelink {
     constructor(el) {
         this.el = el;
-        this.parent = vueParent(this.el);
-        // this.ast = null;
+        this.parent = vueParent(el);
+        this.handlers = [];
         this.isDone = new Promise(resolve => {
             fs.read(this.path).then(str => this.ast = new VueComponent(str))
                 .then(resolve);
@@ -62,22 +62,81 @@ export default class Nodelink {
         return this.el.localName;
     }
 
+    delete() {
+        this.findByDataId(node => {
+            console.log(node);
+            node.tag = false;
+            node.content = [];
+            node.attrs = undefined;
+            console.log(node);
+            return node;
+        });
+        console.log(this.ast.toString());
+        this.save();
+    }
+
+    appendChild(tag) {
+        const nextId = this.getNextDataId();
+        this.findByDataId(node => {
+            if (!node.content) node.content = [];
+            node.content.push({ tag, attrs: { 'data-palette': nextId } });
+            return node;
+        });
+    }
+
+    getNextDataId() {
+        let nodes = [];
+        this.ast.tree.match({ attrs: { 'data-palette': /.*/ } }, node => {
+            nodes.push(node);
+            return node;
+        });
+        const ids = nodes.map(n => Number(n.attrs['data-palette']));
+        return Math.max.apply(null, ids) + 1;
+    }
+
     addDataIds() {
-        let id = 0;
+        let id = this.ast.getNextDataId();
         this.ast.addAttr('data-palette', () => id++);
         this.save();
     }
 
+    dataId() {
+        return this.el.getAttribute('data-palette');
+    }
+
     findByDataId(cb) {
-        return this.ast.findByPaletteId(this.el.getAttribute('data-palette'), cb);
+        console.log(this.dataId());
+        return this.ast.findByPaletteId(this.dataId(), cb);
     }
 
     removeDataIds() {
         this.ast.removeAttr('data-palette');
-        this.save();
+        return this.save();
+    }
+
+    on(event, handler) {
+        this.handlers[event] = handler;
+    }
+
+    off(event) {
+        this.handlers[event] = null;
+    }
+
+    emit(event, payload) {
+        if (this.handlers[event]) {
+            this.handlers[event](payload);
+        }
     }
 
     save() {
+        this.emit('save');
         return fs.write(this.path, this.ast.toString());
+    }
+
+    selectNew(el) {
+        this.emit('select', el);
+        const node = new this.__proto__.constructor(el);
+        node.handlers = this.handlers;
+        return node;
     }
 }

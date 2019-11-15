@@ -64,5 +64,11 @@ window.root = new Vue({
     // await cmp.ready()
     // cmp.setData('foo', 'bar');
     // editor.file = cmp.toString();
+  },
+  created() {
+    this.$socket.emit('addDataIds', 'src/test');
+  },
+  beforeDestroy() {
+    this.socket.emit('removeDataIds');
   }
 }).$mount('#app')

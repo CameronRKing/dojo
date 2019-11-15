@@ -17,6 +17,9 @@ export default {
             modeStack: [],            
         };
     },
+    created() {
+        window.editor = this;
+    },
     computed: {
         storyNames() {
             return Object.keys(stories);
@@ -48,7 +51,7 @@ export default {
             });
         },
         async switchMode({ mode, args }) {
-            const modeCmp = (await import(`../components/${mode}Mode.vue`)).default;
+            const modeCmp = (await import(`../modes/${mode}Mode.vue`)).default;
             this.modeStack.push({ mode: modeCmp, args })
         },
         popMode() {
@@ -58,7 +61,11 @@ export default {
                     this.$refs.mode.teardown(lastMode.args);
                 }
             });
-        }
+        },
+        replaceMode({ mode, args }) {
+            this.popMode();
+            this.switchMode({ mode, args });
+        },
     },
     path: __filename
 };
@@ -70,10 +77,15 @@ export default {
 <div class="flex justify-start">
     <ComponentList @select="selectCmp" />
     <ElementHierarchy v-if="storyReady"
-        :root="$refs.story.$el"
+        :root="() => $refs.story.$el"
         ref="elList"
     />
-    <component v-if="mode" :is="mode" v-bind="modeArgs" @new-mode="switchMode" @old-mode="popMode" ref="mode" />
+    <component v-if="mode" :is="mode" v-bind="modeArgs"
+        ref="mode"
+        @new-mode="switchMode"
+        @old-mode="popMode"
+        @replace-mode="replaceMode"
+    />
     <component v-if="selectedStory" :is="selectedStory" ref="story" />
 </div>
 </template>

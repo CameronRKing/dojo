@@ -64,8 +64,9 @@ export function getPatch(classList, givenClass) {
     }
 }
 
-export function editTailwindClasses(cmp, el, givenClass) {
-    return cmp.findByPaletteId(id, node => {
+export function editTailwindClasses(selection, givenClass) {
+    const el = selection.el;
+    return selection.findByDataId(node => {
         if (!node.attrs) node.attrs = {};
         if (!node.attrs.class) node.attrs.class = '';
 
