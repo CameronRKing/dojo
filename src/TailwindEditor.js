@@ -1,26 +1,11 @@
-// using postcss, I should be able to:
-    // 1) find all utility classes (even user-added ones)
-    // 2) group them into families based on the property they modify
-    // 3) generate reasonable keyboard shortcuts
-export const shortcutToClass = {
-    /* display flex */
-    'df': 'flex',
-    'dfr': 'flex-row-reverse',
-    'dfc': 'flex-column',
-    'dfcr': 'flex-column-reverse',
-    /* justify content */
-    'js': 'justify-start',
-    'jc': 'justify-center',
-    'je': 'justify-end',
-    'ja': 'justify-around',
-    'jb': 'justify-between',
-    /* align items */
-    'is': 'items-start',
-    'ir': 'items-stretch',
-    'ic': 'items-center',
-    'ie': 'items-end',
-    'ib': 'items-baseline',
-};
+// families = { "affected-properties": [array of classes] }
+import families from '@/tailwind-families.json';
+import shortcuts from '@/tailwind-shortcuts.json';
+
+// pass in a class, get back a family
+const classToFamily = Object.keys(families).map(propsAffected =>
+    families[propsAffected].reduce((acc, selector) => ({ ...acc, [selector]: propsAffected }), {}) 
+).reduce((acc, lookup) => ({ ...acc, ...lookup }), {});
 
 // reverses an object's keys/values
 function mapInvert(obj) {
@@ -30,7 +15,9 @@ function mapInvert(obj) {
         }), {});
 }
 
+export const shortcutToClass = shortcuts;
 export const classToShortcut = mapInvert(shortcutToClass);
+export const allClasses = Object.values(families).reduce((acc, arr) => acc.concat(arr), []);
 
 export function bindShortcuts(cb) {
     Object.keys(shortcutToClass)
@@ -93,7 +80,6 @@ export function getPatch(classList, givenClass) {
 }
 
 function containsTailwindFamilyMember(list, givenClass) {
-    const prefix = givenClass.split('-').slice(0, -1).join('-');
-
-    return Array.from(list).find(name => name.startsWith(prefix));
+    const family = classToFamily[givenClass];
+    return Array.from(list).find(cclass => classToFamily[cclass] == family);
 }
