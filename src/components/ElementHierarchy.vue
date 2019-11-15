@@ -57,7 +57,7 @@ export default {
                 this.list = newList;
                 this.$socket.emit('updateDataIds', 'src/test');
             }
-        }, 100);
+        }, 50);
     },
     destroyed() {
         clearInterval(this.intervalId);
@@ -77,6 +77,9 @@ export default {
         moveCursorDown() {
             if (this.highlighted < this.list.length - 1)
                 this.highlighted++;
+        },
+        getHighlighted() {
+            return this.list[this.highlighted];
         },
         selectUnderCursor() {
             this.selectedIdx = this.highlighted;

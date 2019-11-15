@@ -32,7 +32,7 @@ export default {
             // I have no idea why. Can't reproduce it reliably.
             // a single refresh appears to work
             try {
-                selection = new NodeLink(selected.el);
+                selection = new NodeLink(selected.el, this.elList);
             } catch(e) {
                 if (tried) throw e;
                 this.elList.updateNodeList();

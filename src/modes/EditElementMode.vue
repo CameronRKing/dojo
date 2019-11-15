@@ -8,13 +8,18 @@ export default {
         ['tab', 'back to selection'],
         ['t', 'change tag'],
         ['a', 'add child'],
+        ['w', 'edit text'],
+        ['m', 'move node'],
+        ['d', 'delete node'],
     ],
     bindings: {
-        tab(e) { e.preventDefault(); this.$emit('old-mode'); },
+        tab(e) { e.preventDefault(); this.prevMode(); },
         t() { this.newMode('ChangeTag', { selection: this.selection }); },
         a() { this.newMode('AddChild', { selection: this.selection }); },
+        w() { this.newMode('EditTextChildren', { selection: this.selection }); },
         c() { this.newMode('EditClasses', { selection: this.selection }); },
-        d() { this.selection.delete(); this.$emit('old-mode'); }
+        m() { this.newMode('MoveElement', { selection: this.selection }); },
+        d() { this.selection.delete(); this.prevMode(); }
     },
 }
 </script>
@@ -23,6 +28,6 @@ export default {
 
 <template>
 <div>
-    <p v-for="[key, action] in prompts">{{ key }}: {{ action }}</p>
+    <VPrompts v-bind="{ prompts }" />
 </div>
 </template>

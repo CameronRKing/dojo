@@ -8,11 +8,8 @@ export default {
 
 <template>
 <div data-palette="5" class="">
-    <div data-palette="0" class="">Hello, world!</div>
+    <div data-palette="0" class="">Hello, world!<span data-palette="7">change me</span></div>
     <div data-palette="1">Goodbye, all!</div>
-    <div data-palette="2">third thing!</div>
-    <div data-palette="3">fourth thing!
-        <span data-palette="4">oh, and another . . .</span>
-    <a data-palette="6"></a></div>
+    <div data-palette="6">another thing</div>
 </div>
 </template>

@@ -37,8 +37,9 @@ function vueParent(el) {
 }
 
 export default class Nodelink {
-    constructor(el) {
+    constructor(el, elList) {
         this.el = el;
+        this.elList = elList;
         this.parent = vueParent(el);
         this.handlers = [];
         this.isDone = new Promise(resolve => {
@@ -62,19 +63,6 @@ export default class Nodelink {
         return this.el.localName;
     }
 
-    delete() {
-        this.findByDataId(node => {
-            console.log(node);
-            node.tag = false;
-            node.content = [];
-            node.attrs = undefined;
-            console.log(node);
-            return node;
-        });
-        console.log(this.ast.toString());
-        this.save();
-    }
-
     appendChild(tag) {
         const nextId = this.getNextDataId();
         this.findByDataId(node => {
@@ -82,6 +70,11 @@ export default class Nodelink {
             node.content.push({ tag, attrs: { 'data-palette': nextId } });
             return node;
         });
+    }
+
+    delete() {
+        this.findByDataId(() => { tag: false });
+        this.save();
     }
 
     getNextDataId() {
@@ -105,7 +98,6 @@ export default class Nodelink {
     }
 
     findByDataId(cb) {
-        console.log(this.dataId());
         return this.ast.findByPaletteId(this.dataId(), cb);
     }
 
