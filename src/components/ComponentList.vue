@@ -11,9 +11,24 @@ export default {
             cmps: [],
         }
     },
-    created() {
-        fs.vueFilesIn('src/test')
-            .then(cmps => this.cmps = cmps);
+    mounted() {
+        this.updateList();
+    },
+    methods: {
+        updateList() {
+            this.$refs.list.selected = null;
+            fs.vueFilesIn('src/test')
+                .then(cmps => this.cmps = cmps);
+        },
+        moveCursorUp() {
+            this.$refs.list.moveCursorUp();
+        },
+        moveCursorDown() {
+            this.$refs.list.moveCursorDown();
+        },
+        selectUnderCursor() {
+            return this.$refs.list.selectUnderCursor();
+        },
     }
 }
 </script>
@@ -21,5 +36,5 @@ export default {
 
 
 <template>
-    <VList :list="cmps" @select="cmp => $emit('select', cmp)" />
+    <VList ref="list" :list="cmps" @select="cmp => $emit('select', cmp)" />
 </template>

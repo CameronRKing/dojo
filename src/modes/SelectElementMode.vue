@@ -6,10 +6,12 @@ export default {
     mixins: [BaseMode],
     props: ['elList'],
     prompts: [
+        ['tab', 'back to components'],
         ['up/down', 'change selection'],
         ['enter', 'confirm selection']
     ],
     bindings: {
+        tab(e) { e.preventDefault(); this.prevMode(); },
         up() { this.elList.moveCursorUp(); },
         down() { this.elList.moveCursorDown(); },
         enter() { this.confirmSelection(); },
@@ -40,10 +42,7 @@ export default {
                 return;
             }
             selection.on('save', () => this.elList.updateNodeList());
-            this.$emit('new-mode', {
-                mode: 'EditClasses',
-                args: { selection }
-            });
+            this.newMode('EditElement', { selection });
         },
     }
 }

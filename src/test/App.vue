@@ -13,6 +13,6 @@ export default {
     <div data-palette="2">third thing!</div>
     <div data-palette="3">fourth thing!
         <span data-palette="4">oh, and another . . .</span>
-    </div>
+    <a data-palette="6"></a></div>
 </div>
 </template>

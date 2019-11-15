@@ -20,6 +20,9 @@ export default {
     created() {
         window.editor = this;
     },
+    mounted() {
+        this.switchMode({ mode: 'SelectComponent', args: { cmpList: this.$refs.cmpList } });
+    },
     computed: {
         storyNames() {
             return Object.keys(stories);
@@ -46,11 +49,18 @@ export default {
                 this.storyReady = true;
 
                 this.$nextTick(() => {
-                    this.switchMode({ mode: 'Select', args: { elList: this.$refs.elList } });
+                    this.switchMode({ mode: 'SelectElement', args: { elList: this.$refs.elList } });
                 })
             });
         },
         async switchMode({ mode, args }) {
+            // moving from component selection to element selection is hairy
+            // since they rely on $refs injected by the editor
+            // not sure how to handle this quite yet
+            if (mode == 'SelectElement' && !args.elList) {
+                this.selectCmp(args.path);
+                return;
+            }
             const modeCmp = (await import(`../modes/${mode}Mode.vue`)).default;
             this.modeStack.push({ mode: modeCmp, args })
         },
@@ -59,6 +69,12 @@ export default {
             this.$nextTick(() => {
                 if (typeof this.$refs.mode.teardown == 'function') {
                     this.$refs.mode.teardown(lastMode.args);
+                }
+                // moving back to component selection entails resetting the story
+                // which isn't within the purview of any of the modes (for now)
+                if (this.modeStack.length == 1) {
+                    this.selectedStory = null;
+                    this.storyReady = false;
                 }
             });
         },
@@ -75,7 +91,7 @@ export default {
 
 <template>
 <div class="flex justify-start h-full">
-    <ComponentList @select="selectCmp" />
+    <ComponentList ref="cmpList" />
     <ElementHierarchy v-if="storyReady"
         :root="() => $refs.story.$el"
         ref="elList"

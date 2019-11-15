@@ -11,8 +11,9 @@ export default {
     ],
     bindings: {
         tab(e) { e.preventDefault(); this.$emit('old-mode'); },
-        t() { this.$emit('new-mode', { mode: 'ChangeTag', args: { selection: this.selection } }); },
-        a() { this.$emit('new-mode', { mode: 'AddChild', args: { selection: this.selection } }); },
+        t() { this.newMode('ChangeTag', { selection: this.selection }); },
+        a() { this.newMode('AddChild', { selection: this.selection }); },
+        c() { this.newMode('EditClasses', { selection: this.selection }); },
         d() { this.selection.delete(); this.$emit('old-mode'); }
     },
 }

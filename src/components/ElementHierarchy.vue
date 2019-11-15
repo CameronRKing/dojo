@@ -57,7 +57,7 @@ export default {
                 this.list = newList;
                 this.$socket.emit('updateDataIds', 'src/test');
             }
-        }, 500);
+        }, 100);
     },
     destroyed() {
         clearInterval(this.intervalId);
