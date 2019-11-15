@@ -2,7 +2,7 @@
     // 1) find all utility classes (even user-added ones)
     // 2) group them into families based on the property they modify
     // 3) generate reasonable keyboard shortcuts
-export const tailwindShortcuts = {
+export const shortcutToClass = {
     /* display flex */
     'df': 'flex',
     'dfr': 'flex-row-reverse',
@@ -22,46 +22,31 @@ export const tailwindShortcuts = {
     'ib': 'items-baseline',
 };
 
-function containsTailwindFamilyMember(list, givenClass) {
-    const prefix = givenClass.split('-').slice(0, -1).join('-');
-
-    return Array.from(list).find(name => name.startsWith(prefix));
+// reverses an object's keys/values
+function mapInvert(obj) {
+    return Object.keys(obj)
+        .reduce((acc, key) => ({
+            ...acc, [obj[key]]: key
+        }), {});
 }
 
+export const classToShortcut = mapInvert(shortcutToClass);
+
 export function bindShortcuts(cb) {
-    Object.keys(tailwindShortcuts)
+    Object.keys(shortcutToClass)
         .forEach((shortcut) =>
             Mousetrap.bind(
                 shortcut.split('').join(' ') + ' space',
-                () => cb(tailwindShortcuts[shortcut])
+                () => cb(shortcutToClass[shortcut])
             )
         );
 }
 
 export function unbindShortcuts() {
-    Object.keys(tailwindShortcuts)
+    Object.keys(shortcutToClass)
         .forEach((shortcut) => {
             Mousetrap.unbind(shortcut + ' ');
         })
-}
-
-export function getPatch(classList, givenClass) {
-    // if it's already there, typing the class shortcut deletes it
-    if (classList.includes(givenClass)) {
-        return { remove: givenClass }
-    } else {
-        const familyMember = containsTailwindFamilyMember(classList, givenClass);
-        if (familyMember) {
-            return {
-                remove: familyMember,
-                add: givenClass
-            };
-        } else {
-            return {
-                add: givenClass
-            }
-        }
-    }
 }
 
 export function editTailwindClasses(selection, givenClass) {
@@ -71,7 +56,7 @@ export function editTailwindClasses(selection, givenClass) {
         if (!node.attrs.class) node.attrs.class = '';
 
         const elList = el.classList;
-        const srcList = node.attrs.class.split(' ');
+        const srcList = node.attrs.class.split(' ').filter(str => str); // remove empty strings
         const { remove, add } = getPatch(Array.from(elList), givenClass);
         if (remove) {
             elList.remove(remove);
@@ -84,4 +69,31 @@ export function editTailwindClasses(selection, givenClass) {
         node.attrs.class = srcList.join(' ');
         return node;
     });
+}
+
+export function getPatch(classList, givenClass) {
+    // if it's already there, remove it
+    if (classList.includes(givenClass)) {
+        return { remove: givenClass }
+    } else {
+        const familyMember = containsTailwindFamilyMember(classList, givenClass);
+        // if there's a similar class, switch it out
+        if (familyMember) {
+            return {
+                remove: familyMember,
+                add: givenClass
+            };
+        // otherwise, just add it
+        } else {
+            return {
+                add: givenClass
+            }
+        }
+    }
+}
+
+function containsTailwindFamilyMember(list, givenClass) {
+    const prefix = givenClass.split('-').slice(0, -1).join('-');
+
+    return Array.from(list).find(name => name.startsWith(prefix));
 }
