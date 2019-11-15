@@ -14,11 +14,13 @@ export default {
         ['tab', 'back to selection'],
         ['space', 'toggle typed class'],
         ['<>', '"no shortcut"'],
+        ['ctrl+a', 'manage shortcuts'],
         // ['up/down', 'browse classes'],
     ],
     bindings: {
-        tab(e) { e.preventDefault(); this.$emit('old-mode'); },
+        tab(e) { e.preventDefault(); this.prevMode(); },
         space() { this.toggleClass() },
+        'ctrl+a'() { this.newMode('ManageClassShortcuts') },
     },
     data() {
         return {
@@ -62,7 +64,6 @@ export default {
                 return;
             }
             const matchedClasses = this.matchedClasses(trigger, []);
-            console.log(trigger, matchedClasses);
             if (matchedClasses.length) {
                 this.editClass(matchedClasses[0][1]);
                 return;

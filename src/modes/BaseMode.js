@@ -23,6 +23,12 @@ export default {
         });
     },
     methods: {
+        newMode(mode, args) {
+            this.$emit('new-mode', { mode, args });
+        },
+        prevMode() {
+            this.$emit('old-mode');
+        },
         teardown(args) {
             if (this.$options.teardown) {
                 this.$options.teardown.call(this, args);
