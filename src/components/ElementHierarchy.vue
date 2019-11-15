@@ -29,6 +29,11 @@ function listify(el, nesting=0) {
         .flat();
 }
 
+function arrayMatches(arr1, arr2) {
+    return arr1.length == arr2.length &&
+        arr1.reduce((matches, item, idx) => matches && item.el == arr2[idx].el, true);
+}
+
 export default {
     props: ['root'],
     data() {
@@ -37,10 +42,25 @@ export default {
             highlighted: 0,
             selected: null,
             selectedIdx: null,
+            intervalId: null,
         };
     },
     created() {
         this.updateNodeList();
+        // I tried root = $refs.story.$el, but it updated unpredictably
+        // checking that every element is the same will work for small stories,
+        // but it won't scale.
+        this.intervalId = setInterval(() => {
+            const newList = listify(this.root());
+            if (!arrayMatches(newList, this.list)) {
+                console.log('updating ElementHierarchy\'s list');
+                this.list = newList;
+                this.$socket.emit('updateDataIds', 'src/test');
+            }
+        }, 500);
+    },
+    destroyed() {
+        clearInterval(this.intervalId);
     },
     methods: {
         cancelSelection() {
@@ -72,8 +92,8 @@ export default {
         nodeClass(node, idx) {
             const isSelected = this.selectedIdx == idx;
             return {
-                'bg-gray-200': this.highlighted == idx && !isSelected,
-                'bg-gray-400': isSelected,
+                'highlighted': this.highlighted == idx && !isSelected,
+                'selected': isSelected,
             }
         }
     },
@@ -84,10 +104,10 @@ export default {
 
 
 <template>
-<ul>
+<ul class="list">
     <li v-for="(node, idx) in list"
-        :style="{'padding-left': node.nesting * 8 + 'px'}"
+        class="list-item"
         :class="nodeClass(node, idx)"
-    >{{ node.name }}</li>
+    ><span :style="{'padding-left': node.nesting * 8 + 'px'}">{{ node.name }}</span></li>
 </ul>
 </template>

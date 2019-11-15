@@ -44,4 +44,29 @@ export default {
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+.list {
+  @apply text-left bg-blue-800 border-l-2 border-blue-900 text-white
+}
+
+.list-item {
+  @apply py-1 px-2
+}
+
+.list-item.highlighted {
+  @apply bg-blue-700
+}
+
+.list-item.selected {
+  @apply bg-blue-900
+}
+
+.mode-input {
+  @apply w-full rounded-lg my-2 border border-gray-400 px-2
+}
+
+.mode-input:focus {
+  @apply outline-none shadow-outline
+}
+
 </style>

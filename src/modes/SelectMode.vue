@@ -53,6 +53,6 @@ export default {
 
 <template>
 <div>
-    <p v-for="[key, action] in prompts">{{ key }}: {{ action }}</p>
+    <VPrompts v-bind="{ prompts }" />
 </div>
 </template>

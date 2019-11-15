@@ -33,6 +33,10 @@ export default {
     computed: {
         classToShortcut() {
             return mapInvert(this.shortcuts);
+        },
+        shortcutList() {
+            return Object.keys(this.shortcuts)
+                .map(shortcut => [shortcut, this.shortcuts[shortcut]]);
         }
     },
     methods: {
@@ -70,12 +74,10 @@ export default {
 
 <template>
 <div>
-    <h3>Manage shortcuts</h3>
-    <p v-for="[key, action] in prompts">{{ key }}: {{ action }}</p>
-    <input ref="input" v-model="cclass" placeholder="class (no .)" class="mousetrap" />
-    <input v-model="shortcut" placeholder="shortcut" class="mousetrap" />
-    <ul>
-        <li v-for="(shortcut, cclass) in shortcuts">{{ shortcut }}: {{ cclass }}</li>
-    </ul>
+    <VPrompts v-bind="{ prompts }" />
+    <input ref="input" v-model="cclass" placeholder="class (without leading .)" class="mode-input mousetrap" />
+    <input v-model="shortcut" placeholder="shortcut" class="mode-input mousetrap" />
+    <p class="text-center uppercase text-sm font-semibold tracking-wider">shortcuts</p>
+    <VPrompts :prompts="shortcutList" />
 </div>
 </template>

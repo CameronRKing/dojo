@@ -39,8 +39,8 @@ export default {
         itemClass(item, idx) {
             const isSelected = this.selected == item;
             return {
-                'bg-gray-200': this.highlighted == idx && !isSelected,
-                'bg-gray-400': isSelected,
+                'highlighted': this.highlighted == idx && !isSelected,
+                'selected': isSelected,
             }
         },
         defaultDisplay(item) {
@@ -63,8 +63,8 @@ export default {
 
 
 <template>
-<ul ref="list" class="text-left">
-    <li v-for="(item, idx) in list" class="p-2" :class="itemClass(item, idx)" @hover="highlighted = idx" @click="selected = item">
+<ul ref="list" class="list">
+    <li v-for="(item, idx) in list" class="list-item" :class="itemClass(item, idx)" @hover="highlighted = idx" @click="selected = item">
         <slot v-bind="{ item }">{{ defaultDisplay(item) }}</slot>
     </li>
 </ul>

@@ -21,5 +21,5 @@ export default {
 
 
 <template>
-<VList :list="cmps" @select="cmp => $emit('select', cmp)" />
+    <VList :list="cmps" @select="cmp => $emit('select', cmp)" />
 </template>

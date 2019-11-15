@@ -74,7 +74,7 @@ export default {
 
 
 <template>
-<div class="flex justify-start">
+<div class="flex justify-start h-full">
     <ComponentList @select="selectCmp" />
     <ElementHierarchy v-if="storyReady"
         :root="() => $refs.story.$el"
@@ -82,10 +82,13 @@ export default {
     />
     <component v-if="mode" :is="mode" v-bind="modeArgs"
         ref="mode"
+        class="p-2 text-gray-800 bg-gray-200"
         @new-mode="switchMode"
         @old-mode="popMode"
         @replace-mode="replaceMode"
     />
-    <component v-if="selectedStory" :is="selectedStory" ref="story" />
+    <div class="flex justify-center flex-grow">
+        <component v-if="selectedStory" :is="selectedStory" ref="story" />
+    </div>
 </div>
 </template>
