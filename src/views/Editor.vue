@@ -42,6 +42,7 @@ export default {
     },
     methods: {
         async selectCmp(path) {
+            console.log(path);
             this.selectedStory = (await import('../' + path.replace('src/', ''))).default;
             // $refs take a tick to get on the page
             // changes in $refs don't appear to trigger cascades

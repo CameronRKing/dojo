@@ -9,6 +9,7 @@ export default {
         ['t', 'change tag'],
         ['a', 'add child'],
         ['w', 'edit text'],
+        ['c', 'edit classes'],
         ['m', 'move node'],
         ['d', 'delete node'],
     ],

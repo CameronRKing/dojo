@@ -7,13 +7,14 @@ export default {
     props: ['elList'],
     prompts: [
         ['tab', 'back to components'],
-        ['up/down', 'change selection'],
+        ['k', 'move up'],
+        ['j', 'move down'],
         ['enter', 'confirm selection']
     ],
     bindings: {
         tab(e) { e.preventDefault(); this.prevMode(); },
-        up() { this.elList.moveCursorUp(); },
-        down() { this.elList.moveCursorDown(); },
+        k() { this.elList.moveCursorUp(); },
+        j() { this.elList.moveCursorDown(); },
         enter() { this.confirmSelection(); },
     },
     mounted() {

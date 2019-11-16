@@ -1,5 +1,8 @@
 const io = require('socket.io')();
-const plugins = require('./server-plugins.js');
+const plugins = [
+    require('./filesystem.js'),
+    require('./data-ids.js'),
+];
 
 io.on('connection', (client) => {
     forEachRouteIn(plugins, (route, handler) => {

@@ -17,6 +17,16 @@ async function forVueCmpInDir(dir, cb) {
     return Promise.resolve();
 }
 
+async function addDataIdsTo(file) {
+    console.log(file);
+    const str = await fs.read(file);
+    const cmp = new VueComponent(str);
+    await cmp.ready();
+    let id = cmp.getNextDataId();
+    cmp.addAttr('data-palette', () => id++);
+    return fs.write([file, cmp.toString()]);
+}
+
 function addDataIds(dir) {
     return forVueCmpInDir(dir, cmp => {
         let id = cmp.getNextDataId();
@@ -35,8 +45,13 @@ function removeDataIds(dir) {
     });
 }
 
+
+
 module.exports = {
     addDataIds,
     updateDataIds,
-    removeDataIds
+    removeDataIds,
+    addDataIdsTo,
+    // a little cleanup hack for now
+    disconnect: () => removeDataIds('src/test'),
 };

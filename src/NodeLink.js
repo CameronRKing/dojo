@@ -73,7 +73,8 @@ export default class Nodelink {
     }
 
     delete() {
-        this.findByDataId(() => { tag: false });
+        this.findByDataId(() => undefined);
+        console.log(this.ast.results.html);
         this.save();
     }
 

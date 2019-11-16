@@ -39,7 +39,6 @@ window.root = new Vue({
   store,
   render: h => h(toMount),
   created() {
-    this.$socket.emit('addDataIds', 'src/test');
     Mousetrap.bind('ctrl+shift+s', (e) => { e.preventDefault(); this.$socket.emit('removeDataIds', 'src/test') });
   },
 }).$mount('#app')

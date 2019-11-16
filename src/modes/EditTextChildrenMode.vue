@@ -23,8 +23,11 @@ export default {
         }
     },
     created() {
+        window.el = this.selection.el;
         this.selection.findByDataId(node => {
+            console.log(node.content);
             if (!node.content) node.content = [];
+            console.log(node.content);
             this.content = node.content;
             return node;
         });
