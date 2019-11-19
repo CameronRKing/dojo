@@ -39,7 +39,7 @@ export default {
 
 <template>
 <div class="flex h-full">
-    <AstNavigator class="flex-grow" v-if="ast" :ast="ast" />
-    <CodeMirror class="flex-grow" v-model="file" />
+    <AstNavigator class="flex-grow flex-1" v-if="ast" :ast="ast" />
+    <CodeMirror class="flex-grow flex-1" v-model="file" />
 </div>
 </template>

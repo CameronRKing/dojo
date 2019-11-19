@@ -51,7 +51,7 @@ export default {
 
 
 <template>
-<div>
+<div class="bg-gray-200">
     <span v-for="(link, idx) in nodeChain.reverse()">
         {{ link.type }}<span v-if="link.field">.{{ link.field }}</span>
         <span v-if="link.pos">[{{link.pos}}]</span>

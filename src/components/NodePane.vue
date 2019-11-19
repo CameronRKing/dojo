@@ -50,6 +50,28 @@ export default {
         },
     },
     methods: {
+        selectPreviewDown() {
+            const fields = Object.keys(this.nodeChildren);
+            if (fields.length == 0) return;
+            if (!this.toPreview) {
+                this.toPreview = fields[0];
+                return;
+            }
+            const newIdx = fields.indexOf(this.toPreview) + 1;
+            if (newIdx > fields.length - 1) return;
+            this.toPreview = fields[newIdx];
+        },
+        selectPreviewUp() {
+            const fields = Object.keys(this.nodeChildren);
+            if (fields.length == 0) return;
+            if (!this.toPreview) {
+                this.toPreview = fields[0];
+                return;
+            }
+            const newIdx = fields.indexOf(this.toPreview) - 1;
+            if (newIdx < 0) return;
+            this.toPreview = fields[newIdx];
+        },
         childClass(field) {
             return {
                 'bg-gray-200': field == this.toPreview

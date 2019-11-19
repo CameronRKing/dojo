@@ -4,3 +4,7 @@ export function mapInvert(obj) {
             ...acc, [obj[key]]: key
         }), {});
 }
+
+export function pairs(obj) {
+    return Object.keys(obj).map(key => [key, obj[key]]);
+}
