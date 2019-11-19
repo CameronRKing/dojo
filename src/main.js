@@ -16,9 +16,10 @@ Vue.use({
 
 import fs from '@/fs-client';
 import CodeMirror from '@/components/CodeMirror.vue';
-import Editor from '@/views/Editor.vue';
+import HtmlEditor from '@/views/HtmlEditor.vue';
+import JsEditor from '@/views/JsEditor.vue';
 window.fs = fs;
-window.toMount = Editor;
+window.toMount = JsEditor;
 window.mt = async (cmp) => {
     if (typeof cmp == 'string') {
         toMount = await getCmp(cmp);

@@ -6,12 +6,12 @@ import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/theme/base16-dark.css';
 
 export default {
+    props: ['value'],
     components: {
         codemirror,
     },
     data() {
         return {
-            file: '',
             currPath: '',
             cmOptions: {
                 tabSize: 4,
@@ -37,5 +37,13 @@ export default {
 
 
 <template>
-    <codemirror v-model="file" :options="cmOptions"></codemirror>
+    <codemirror class="h-full" :value="value" @input="e => $emit('input', e)" :options="cmOptions"></codemirror>
 </template>
+
+
+
+<style lang="postcss">
+.CodeMirror {
+    @apply h-full
+}
+</style>

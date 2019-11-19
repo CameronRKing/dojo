@@ -7,10 +7,10 @@ export default {
 
 
 <template>
-<div data-palette="0">
-    <div data-palette="1">Hello, world!</div>
-    <div data-palette="2">Goodbye, all!</div>
-    <div data-palette="3">another thing</div>
+<div>
+    <div>Hello, world!</div>
+    <div>Goodbye, all!</div>
+    <div>another thing</div>
     
 </div>
 </template>

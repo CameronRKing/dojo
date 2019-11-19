@@ -1,0 +1,90 @@
+Last week, I focused on HTML display and manipulation.
+
+This week, I'm going to focus on JS testing and manipulation.
+
+What does that look like? I imagine four basic capabilities.
+
+1) Fluid switching between text & AST
+    - this means that they'll have to live in the same process (sorry language server protocol)
+
+    Right now, I imagine something a lot like astexplorer.net
+    Though I want it to be more minimal and functional.
+        1) instead of opening up the whole tree, I'd like a shortcut expression for the path
+            - e.g., Program.body[1] > FunctionDeclaration.body > BlockStatement.body[0] > ExpressionStatement.expression > CallExpression.callee
+            Not that exactly, but something like that.
+            The goal of the path is to get a quick understanding of the hierarchy and to be able to navigate it simply.
+        2) separation between primitive properties and node children
+        3) contextual actions (like modes in HtmlEditor)
+            - and a way to add new actions
+        4) command-line access to the whole data structure, the current node, and any saved nodes
+        5) search upwards/downwards/sideways
+
+    Given a cursor position, we can start somewhere in the AST and jump around from there.
+        - two directions of searching: deeper/higher && before/after
+
+2) Succinct AST query/manipulation
+    - grasp.js provides a really great example. I'll focus on the jQuery-like syntax first.
+
+    Strict jQuery-like won't work. I'll want to select a node that has a certain kind of child.
+    For example, finding things by name (since name is buried in an identifier).
+        - will there be any other cases? If it's just this one, I can write something special for it.
+        - alternately, there could be declarative filter clause that we attach to the node we want.
+    Eventually I'll want to rig this up to keyboard shortcuts (structural navigation mode),
+    but I have no idea how yet.
+    I also really want findOrCreate functionality. And updateOrCreate functionality.
+        - can the two concepts be collapsed? I'm not sure.
+
+3) AST contextual manipulation script repository
+    - i.e., saving manipulations as you discover them, and choosing when they should be displayed in the future
+
+    Instead of writing all these refactorings into the source code,
+    I imagine it'd be easier to write a platform for writing refactorings.
+    Then I can write them as I need them.
+    Plus, this architecture makes it clearer that refactoring is just one special case of AST manipulation.
+
+    I imagine the contextual prompting will be best served by:
+        1) attaching it to specific node types, that
+        2) pass a given test (optional)
+
+    Ideally, these manipulation scripts would be written and saved as plain JS files.
+    Think Sublime plugins or snippets.
+
+4) Inline evaluation of statements
+    - given a set of runtimes linked to source code, show the values in the code
+
+    Displaying in-code shouldn't be too hard, especially if I can find a good JS object navigator.
+
+    I have two ideas for how to do it.
+    1) hook up to Chrome devtools somehow
+    2) wrap the statement with a call that intercepts the value, sends it somewhere, and returns it
+        - promises will require a little extra work
+        - how do we save values? JSON.stringify could be lossy.
+        - I could copy values into a table as they come, then let users interact with values directly
+            + but objects/arrays might be manipulated after they come, and copying won't be easy
+            + objects might reference state that no longer exists (unless inline evaluation comes with debugger pausing)
+
+    BIG QUESTION: do I want to let users interact with VALUES or OBJECTS?
+        - if values, then I just need to know what to pull out.
+            => asking users to make their objects JSON.stringifyable isn't too much to ask
+        - if objects (i.e., they should be able to call functions from inline), then I have to save the whole damn thing somehow (would be easier if all I really do is pause script execution and link to actions on a given runtime object)
+
+
+5) tests && results exposed as in-process data structures
+    - no more runtimes, no more reporters. Give me commands and queries.
+
+~~~
+
+What does the supporting architecture look like?
+
+Parser and editor live side-by-side.
+They send changes to one another to stay in sync.
+    - for now, easiest to send the whole file.
+If tests are expressed as components, I can rely on webpack for detecting changes.
+    - rather than writing test components directly, it'd be more succinct to use familiar test syntax
+        and somehow convert it into a component.
+
+    Component tests also make interactivity a lot easier.
+    Tests can run headless (not on the DOM; via @vue/test-utils) by default.
+    Then we can mount failures or selected tests for visual interaction.
+    Running tests in watch mode is a question of leaving the component mounted.
+    Running tests once means mounting, waiting for completion, fetching results, and unmounting.
