@@ -4,6 +4,7 @@ import Mousetrap from 'mousetrap';
 import NodePath from '@/components/NodePath';
 import NodePane from '@/components/NodePane';
 import VPrompts from '@/components/VPrompts';
+import methods from '@/types/methods.js';
 import { pairs } from '@/utils.js';
 
 export default {
@@ -25,11 +26,14 @@ export default {
                 ['enter', 'select highlighted child'],
                 ['shift+j', '++childArrayIdx'],
                 ['shift+k', '--childArrayIdx'],
+                ['\\', 'bind current node collection to "node" in console'],
+                ['r < method index >', 'run given method'],
             ],
             bindings: {
                 tab(e) { e.preventDefault(); this.nodePath = this.nodePath.parent; },
                 j() { this.$refs.nodePane.selectPreviewDown(); },
                 k() { this.$refs.nodePane.selectPreviewUp(); },
+                "\\"() { window.node = j(this.nodePath); },
             }
         };
     },
@@ -40,7 +44,12 @@ export default {
                 if (!this.ast) return;
                 await this.ast.ready();
                 this.nodePath = this.ast.script.find(j.Program).get();
+                window.nodePath = this.nodePath;
             }
+        },
+        nodePath() {
+            this.teardownMethodShortcuts();
+            this.setupMethodShortcuts();
         }
     },
     created() {
@@ -54,6 +63,11 @@ export default {
         );
     },
     computed: {
+        availableMethods() {
+            if (!this.nodePath || !methods[this.nodePath.value.type]) return [];
+            return Object.keys(methods[this.nodePath.value.type])
+                .map((fnName, idx) => [idx, fnName]);
+        },
         // it feels like there's an abstraction here waiting to be pulled out
         // something about 
         previewVal() {
@@ -62,9 +76,11 @@ export default {
         },
         previewNode() {
             this.teardownPreviewShortcuts();
-            this.previewPos = 0;
 
-            if (!this.toPreview) return null;
+            if (!this.toPreview) {
+                this.previewPos = 0;
+                return null;
+            }
 
             this.setupPreviewShortcuts();
 
@@ -76,6 +92,14 @@ export default {
         }
     },
     methods: {
+        teardownMethodShortcuts() {
+            this.availableMethods.forEach(([shortcut, _]) => Mousetrap.unbind('r ' + shortcut));
+        },
+        setupMethodShortcuts() {
+            this.availableMethods.forEach(([shortcut, name]) =>
+                Mousetrap.bind(`r ${shortcut}`, () => j(this.nodePath)[name]())
+            );
+        },
         setupPreviewShortcuts() {
             Mousetrap.bind('enter', () => {
                 const oldPath = this.nodePath;
@@ -95,6 +119,7 @@ export default {
             this.teardownArrayNavigation();
         },
         setupArrayNavigation() {
+            console.log('setting up array')
             Mousetrap.bind('shift+j', () => {
                 if (this.previewPos < this.toPreview.length - 1)
                     this.previewPos++;
@@ -119,7 +144,7 @@ export default {
     <NodePath v-if="nodePath" :node-path="nodePath" />
     <NodePane v-if="nodePath" ref="nodePane" :node="nodePath.value" @preview="field => toPreview = field" />
     <div v-if="toPreview">
-        <hr class="border-gray-800 border-2" />
+        <hr class="border-gray-400 border-2" />
         <div class="header">child preview</div>
         <div v-if="Array.isArray(previewVal)">
             selected child: {{ previewPos + 1 }} of {{ previewVal.length }}
@@ -127,5 +152,10 @@ export default {
         <NodePane :node="previewNode" />
     </div>
     <VPrompts v-bind="{ prompts }" />
+
+    <hr class="brorder-gray-400 border-2 my-2" />
+
+    <div class="header">available methods</div>
+    <VPrompts :prompts="availableMethods" />
 </div>
 </template>

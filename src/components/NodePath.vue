@@ -1,5 +1,6 @@
 <script>
 import { getFieldNames, getFieldValue } from 'ast-types';
+import { showType } from '@/utils.js'
 
 function getNodeParentChain(node) {
     let nodeChain = [{ node, type: node.value.type }];
@@ -43,7 +44,10 @@ export default {
             if (!this.nodePath) return [];
             return getNodeParentChain(this.nodePath);
         }
-    }    
+    },
+    methods: {
+        showType,
+    } 
 }
 
 </script>
@@ -53,7 +57,7 @@ export default {
 <template>
 <div class="bg-gray-200">
     <span v-for="(link, idx) in nodeChain.reverse()">
-        {{ link.type }}<span v-if="link.field">.{{ link.field }}</span>
+        {{ showType(link.type) }}<span v-if="link.field">.{{ link.field }}</span>
         <span v-if="link.pos">[{{link.pos}}]</span>
         <span v-if="idx != nodeChain.length - 1">&nbsp;>&nbsp;</span>
     </span>

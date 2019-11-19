@@ -1,6 +1,6 @@
 <script>
 import { getFieldNames, getFieldValue } from 'ast-types';
-import { mapInvert } from '@/utils.js';
+import { mapInvert, showType } from '@/utils.js';
 
 function nodeAttrs(node) {
     return getFieldNames(node)
@@ -27,8 +27,11 @@ export default {
             if (!this.toPreview) return;
             this.$emit('preview', this.toPreview);
         },
-        node() {
-            this.toPreview = null;
+        node: {
+            immediate: true,
+            handler() {
+                this.setDefaultPreview();
+            }
         }
     },
     computed: {
@@ -50,6 +53,12 @@ export default {
         },
     },
     methods: {
+        showType,
+        setDefaultPreview() {
+            const fields = Object.keys(this.nodeChildren);
+            if (fields.length == 0) this.toPreview = null;
+            else this.toPreview = fields[0];
+        },
         selectPreviewDown() {
             const fields = Object.keys(this.nodeChildren);
             if (fields.length == 0) return;
@@ -90,7 +99,7 @@ export default {
             <div class="header">attributes</div>
             <table>
                 <tr v-for="(val, field) in nodeAttrs">
-                    <td class="text-right font-bold">{{ field }}:</td>
+                    <td class="text-left font-bold">{{ field }}:</td>
                     <td class="text-left">{{ JSON.stringify(val) }}</td>
                 </tr>
             </table>
@@ -101,8 +110,8 @@ export default {
             <div v-if="Object.keys(nodeChildren).length == 0" class="text-center">< no children ></div>
             <table>
                 <tr v-for="(val, field) in nodeChildren" @click="toPreview = field" :class="childClass(field)">
-                    <td class="text-right font-bold">{{ field }}:</td>
-                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => v.type)) : val.type }}</td>
+                    <td class="text-left font-bold">{{ field }}:</td>
+                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => showType(v.type))) : showType(val.type) }}</td>
                 </tr>
             </table>
         </div>
