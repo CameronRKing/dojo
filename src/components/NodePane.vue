@@ -1,95 +1,71 @@
 <script>
 import { getFieldNames, getFieldValue } from 'ast-types';
-import VPrompts from '@/components/VPrompts';
-
-function getNodeParentChain(node) {
-    let nodeChain = [{ node, type: node.value.type }];
-    let parent = node.parent;
-    let child = node;
-    while (parent) {
-        nodeChain.push(getPositionInParent(child.value, parent.value));
-        let newChild = parent;
-        parent = parent.parent;
-        child = newChild;
-    }
-    return nodeChain;
-}
-
-function getPositionInParent(child, parent) {
-    // if its an Array, we need the field name AND the position
-    // otherwise, we just need the field name
-    let pos;
-    const field = getFieldNames(parent).find(name => {
-        const val = getFieldValue(parent, name);
-        if (Array.isArray(val)) {
-            pos = val.indexOf(child);
-            if (pos >= 0) return true;
-            pos = undefined;
-            return false;
-        }
-        return val == child;
-    });
-    return {
-        field,
-        pos,
-        type: parent.type,
-        node: parent,
-    };
-}
+import { mapInvert } from '@/utils.js';
 
 function nodeAttrs(node) {
     return getFieldNames(node)
-        .filter(field => field !== 'type' && !(Array.isArray(node[field]) || typeof node[field] == 'object'))
+        .filter(field => node[field] == null || !(Array.isArray(node[field]) || typeof node[field] == 'object'))
         .reduce((acc, field) => ({ ...acc, [field]: node[field] }), {});
 }
 
 function nodeChildren(node) {
     const attrs = Object.keys(nodeAttrs(node));
     return getFieldNames(node)
-        .filter(field => field !== 'type' && !attrs.includes(field))
+        .filter(field => !attrs.includes(field))
         .reduce((acc, field) => ({ ...acc, [field]: node[field] }), {});
 }
 
 export default {
-    components: {
-        VPrompts,
+    props: ['node'],
+    data() {
+        return {
+            toPreview: null,
+        };
     },
-    props: ['nodePath'],
-    computed: {
-        prompts() {
-            return [];
+    watch: {
+        toPreview() {
+            if (!this.toPreview) return;
+            this.$emit('preview', this.toPreview);
         },
-        nodeChain() {
-            if (!this.nodePath) return [];
-            return getNodeParentChain(this.nodePath);
-        },
-        nodeAttrs() {
-            if (!this.nodePath) return {};
-            return nodeAttrs(this.nodePath.value);
-        },
-        nodeChildren() {
-            if (!this.nodePath) return {};
-            return nodeChildren(this.nodePath.value);
+        node() {
+            this.toPreview = null;
         }
     },
+    computed: {
+        nodeAttrs() {
+            if (!this.node) return {};
+            return nodeAttrs(this.node);
+        },
+        nodeChildren() {
+            if (!this.node) return {};
+            return nodeChildren(this.node);
+        },
+        childToShortcut() {
+            if (!this.node) return {};
+            
+        },
+        shortcutToChild() {
+            if (!this.node) return {};
+            return mapInvert(this.childToShortcut);
+        },
+    },
+    methods: {
+        childClass(field) {
+            return {
+                'bg-gray-200': field == this.toPreview
+            }
+        }
+    }
 }
 </script>
 
 
 
 <template>
-<div class="flex-grow">
-    <div>
-        <span v-for="(link, idx) in nodeChain.reverse()">
-            {{ link.type }}<span v-if="link.field">.{{ link.field }}</span>
-            <span v-if="link.pos">[{{link.pos}}]</span>
-            <span v-if="idx != nodeChain.length - 1">&nbsp;>&nbsp;</span>
-        </span>
-    </div>
+<div>
     <div class="flex">
         <div class="flex-grow">
-            <div class="font-bold text-sm tracking-wider uppercase text-center">attributes</div>
-            <div v-if="Object.keys(nodeAttrs).length == 0" class="text-center">< no attributes ></div>
+            <div class="header">attributes</div>
             <table>
                 <tr v-for="(val, field) in nodeAttrs">
                     <td class="text-right font-bold">{{ field }}:</td>
@@ -99,19 +75,15 @@ export default {
         </div>
 
         <div class="flex-grow">
-            <div class="font-bold text-sm tracking-wider uppercase text-center">children</div>
-            <div v-if="Object.keys(nodeChildren).length == 0" class="text-center">< no attributes ></div>
+            <div class="header">children</div>
+            <div v-if="Object.keys(nodeChildren).length == 0" class="text-center">< no children ></div>
             <table>
-                <tr v-for="(val, field) in nodeChildren">
+                <tr v-for="(val, field) in nodeChildren" @click="toPreview = field" :class="childClass(field)">
                     <td class="text-right font-bold">{{ field }}:</td>
-                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => v.type)) : v.type }}</td>
+                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => v.type)) : val.type }}</td>
                 </tr>
             </table>
         </div>
-    </div>
-
-    <div>
-        <VPrompts v-bind="{ prompts }" />
     </div>
 </div>
 </template>

@@ -1,19 +1,12 @@
 // families = { "affected-properties": [array of classes] }
 import families from '@/tailwind-families.json';
 import shortcuts from '@/tailwind-shortcuts.json';
+import { mapInvert } from '@/utils.js';
 
 // pass in a class, get back a family
 const classToFamily = Object.keys(families).map(propsAffected =>
     families[propsAffected].reduce((acc, selector) => ({ ...acc, [selector]: propsAffected }), {}) 
 ).reduce((acc, lookup) => ({ ...acc, ...lookup }), {});
-
-// reverses an object's keys/values
-function mapInvert(obj) {
-    return Object.keys(obj)
-        .reduce((acc, key) => ({
-            ...acc, [obj[key]]: key
-        }), {});
-}
 
 export const shortcutToClass = shortcuts;
 export const classToShortcut = mapInvert(shortcutToClass);

@@ -69,4 +69,7 @@ export default {
   @apply outline-none shadow-outline
 }
 
+.header {
+  @apply text-sm font-bold tracking-wider uppercase text-center
+}
 </style>

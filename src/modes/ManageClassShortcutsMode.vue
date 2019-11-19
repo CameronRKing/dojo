@@ -2,13 +2,7 @@
 import BaseMode from './BaseMode.js';
 import fs from '@/fs-client.js';
 import shortcuts from '@/tailwind-shortcuts.json';
-
-function mapInvert(obj) {
-    return Object.keys(obj)
-        .reduce((acc, key) => ({
-            ...acc, [obj[key]]: key
-        }), {});
-}
+import { mapInvert } from '@/utils.js';
 
 
 export default {

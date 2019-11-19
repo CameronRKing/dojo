@@ -1,29 +1,28 @@
 <script>
 import j from 'jscodeshift';
 import CodeMirror from '@/components/CodeMirror.vue';
-import NodePane from '@/components/NodePane.vue';
+import AstNavigator from '@/components/AstNavigator.vue';
 import fs from '@/fs-client.js';
 import VueComponent from '@/VueComponent.js';
 
+window.j = j;
 
 export default {
     components: {
         CodeMirror,
-        NodePane,
+        AstNavigator,
     },
     data() {
         return {
             file: '',
             ast: null,
-            nodePath: null,
         }
     },
     watch: {
-        async file() {
-            this.ast =  new VueComponent(this.file);
-            await this.ast.ready();
-            this.nodePath = this.ast.script.find(j.Program).get();
-            window.nodePath = this.nodePath;
+        file() {
+            this.ast = new VueComponent(this.file);
+            window.ast = this.ast;
+
         }
     },
     created() {
@@ -40,7 +39,7 @@ export default {
 
 <template>
 <div class="flex h-full">
-    <NodePane v-if="nodePath" :node-path="nodePath" />
+    <AstNavigator class="flex-grow" v-if="ast" :ast="ast" />
     <CodeMirror class="flex-grow" v-model="file" />
 </div>
 </template>
