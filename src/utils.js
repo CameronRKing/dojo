@@ -25,6 +25,12 @@ export function mapWithKeys(arr, cb) {
     }, {});
 }
 
+export function remove(arr, item) {
+    const idx = arr.indexOf(item);
+    if (idx == -1) return;
+    arr.splice(idx, 1);
+}
+
 import shortcuts from '@/types/shortcuts';
 const typeToShortcut = mapInvert(shortcuts);
 export function showType(type, shouldCapitalize=true) {
