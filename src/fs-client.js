@@ -21,5 +21,8 @@ export default {
     },
     createVueFile(path) {
         return emit('write', [path, vueBoilerplate]);
+    },
+    srcFiles() {
+        return emit('srcFiles');
     }
 }

@@ -33,22 +33,46 @@ function writeAll(filenames) {
  * e.g., vueFilesIn('src') => ['src/App.vue', 'src/components/HelloWorld.vue']
  **/
 function vueFilesIn(dir) {
-    const allContents = fs.readdirSync(dir, { withFileTypes: true });
-    const currFiles =  allContents
-        .filter(f => !f.isDirectory() && f.name.endsWith('.vue'))
-        .map(f => `${dir}/${f.name}`);
+    return filesIn({ start: dir, file: f => f.name.endsWith('.vue') });
+}
 
-    const deeperFiles = allContents
-        .filter(f => f.isDirectory())
-        .map(d => vueFilesIn(`${dir}/${d.name}`))
-        .reduce((acc, d) => acc.concat(d), []); // since arr.flat() doesn't exist in most versions of node, apparently
+/**
+ * Returns the paths of all files not in .git && node_modules
+ * relative to the source directory of the node server
+ **/
+function srcFiles() {
+    return filesIn({ directory: d => !['.git', 'node_modules'].includes(d.name) });
+}
 
-    return currFiles.concat(deeperFiles);
+/**
+ * Recursively finds all files that pass a truth test
+ * Looks only in directories that pass a truth test
+ * Finds all files in all directories by default
+ * Starts looking in the server runtime directory by default
+ **/
+function filesIn({ start='.', directory, file }={}) {
+    const dirTest = directory ? directory : () => true;
+    const fileTest = file ? file : () => true;
+
+    const contents = fs.readdirSync(start, { withFileTypes: true });
+
+    const files = contents
+        .filter(f => !f.isDirectory() && fileTest(f))
+        .map(f => `${start}/${f.name}`);
+
+    const deeperFiles = contents
+        .filter(f => f.isDirectory() && dirTest(f))
+        .map(d => filesIn({ start: `${start}/${d.name}`, directory, file }))
+        .reduce((acc, d) => acc.concat(d), []);
+
+    return files.concat(deeperFiles).map(name => name.replace(/^.\//, ''));
 }
 
 module.exports = {
     read,
     readAll,
     write,
-    vueFilesIn
+    vueFilesIn,
+    srcFiles,
+    filesIn,
 }

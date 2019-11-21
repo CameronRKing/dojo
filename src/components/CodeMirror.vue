@@ -4,16 +4,21 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/keymap/sublime.js';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/theme/base16-dark.css';
+import FileQuickOpen from '@/components/FileQuickOpen';
 
 export default {
-    props: ['value', 'path'],
     components: {
         codemirror,
+        FileQuickOpen,
     },
+    props: ['value', 'path'],
     data() {
         return {
+            cm: null,
+            opening: false,
             cmOptions: {
                 tabSize: 4,
+                autofocus: true,
                 mode: 'test/javascript',
                 theme: 'base16-dark',
                 lineNumbers: true,
@@ -21,7 +26,7 @@ export default {
                 keyMap: 'sublime',
                 extraKeys: {
                     'Ctrl-S': () => this.save(),
-                    'Ctrl-P': () => this.$emit('open', 'src/test/App.vue'),
+                    'Ctrl-P': () => this.opening = true,
                     // some Chrome shortcuts can be overridden, but not all
                     // Ctrl-N & Ctrl-T are inviolable
                     'Alt-N': () => this.$emit('new-tab'),
@@ -33,12 +38,21 @@ export default {
         }
     },
     methods: {
+        focus() {
+            // it's not the best practice to hit an internal this way,
+            // but it's more terse than saving the instance from the ready event
+            this.$refs.editor.cminstance.focus();
+        },
         save() {
             let path = this.path;
             if (!path) {
                 path = window.prompt('Enter a path relative to the source directory:');
             }
             this.$emit('save', path);
+        },
+        open(path) {
+            this.opening = false;
+            this.$emit('open', path);
         }
     }
 }
@@ -47,11 +61,15 @@ export default {
 
 
 <template>
+<div class="h-full">
+    <FileQuickOpen v-if="opening" @open="open" />
     <codemirror class="h-full"
+        ref="editor"
         :value="value"
         @input="e => $emit('input', e)"
         :options="cmOptions"
     ></codemirror>
+</div>
 </template>
 
 
