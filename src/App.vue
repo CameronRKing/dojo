@@ -72,4 +72,11 @@ export default {
 .header {
   @apply text-sm font-bold tracking-wider uppercase text-center
 }
+
+.bg-codemirror-dark {
+  background-color: #151515;
+}
+.border-codemirror-dark {
+  border-color: #151515;
+}
 </style>

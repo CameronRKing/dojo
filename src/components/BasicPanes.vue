@@ -56,10 +56,10 @@ export default {
 <template>
     <div class="flex">
         <div class="w-full" v-for="(pane, paneIdx) in panes">
-            <div class="tabs">
+            <div class="tabs flex">
                 <span v-for="(tab, idx) in pane.tabs"
-                    class="border-2 border-gray-400"
-                    :class="{'bg-gray-400': pane.selected == idx }"
+                    class="bg-gray-800 px-1 text-white"
+                    :class="{'bg-codemirror-dark': pane.selected == idx }"
                     @click="pane.selected = idx"
                 >{{ tab.name }}</span>
             </div>
