@@ -2,18 +2,16 @@
 import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/keymap/sublime.js';
-import fs from '@/fs-client';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/theme/base16-dark.css';
 
 export default {
-    props: ['value'],
+    props: ['value', 'path'],
     components: {
         codemirror,
     },
     data() {
         return {
-            currPath: '',
             cmOptions: {
                 tabSize: 4,
                 mode: 'test/javascript',
@@ -22,8 +20,8 @@ export default {
                 line: true,
                 keyMap: 'sublime',
                 extraKeys: {
-                    'Ctrl-S': () => this.$emit('save'),
-                    'Ctrl-P': () => this.$emit('open'),
+                    'Ctrl-S': () => this.save(),
+                    'Ctrl-P': () => this.$emit('open', 'src/test/App.vue'),
                     // some Chrome shortcuts can be overridden, but not all
                     // Ctrl-N & Ctrl-T are inviolable
                     'Alt-N': () => this.$emit('new-tab'),
@@ -35,12 +33,12 @@ export default {
         }
     },
     methods: {
-        getFile(path) {
-            this.currPath = path;
-            return fs.read(path).then(file => this.file = file);
-        },
-        setFile() {
-            return fs.write([this.currPath, this.file]);
+        save() {
+            let path = this.path;
+            if (!path) {
+                path = window.prompt('Enter a path relative to the source directory:');
+            }
+            this.$emit('save', path);
         }
     }
 }

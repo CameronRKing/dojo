@@ -1,53 +1,38 @@
 <script>
-import CodeMirror from '@/components/CodeMirror.vue';
 import { remove } from '@/utils.js';
 
-class FileTab {
-    constructor(paneManager, path=null, contents='') {
-        this.paneManager = paneManager;
-        this.path = path;
-        this.contents = contents;
-    }
-
-    get name() {
-        return this.path ? this.path : '*scratch*';
-    }
-
-    get component() {
-        return CodeMirror;
-    }
-
-    get props() {
-        return {
-            value: this.contents
-        }
-    }
-
-    get events() {
-        return {
-            input(str) { this.contents = str; },
-            save() { console.log('saving'); },
-            open() { console.log('opening'); },
-        }
-    }
-}
-
 export default {
+    props: ['TabType'],
     data() {
         return {
-            panes: [{ tabs: [new FileTab(this)], selected: 0 }],
+            panes: [],
         };
+    },
+    created() {
+        this.newPane();
     },
     methods: {
         remove,
         newPane(tabs) {
             if (!tabs) {
-                tabs = [new FileTab(this)];
+                tabs = [new this.TabType(this)];
             }
             this.panes.push({ tabs, selected: 0 });
         },
-        newTab(pane) {
-            pane.tabs.push(new FileTab(this));
+        killPane(pane) {
+            remove(this.panes, pane);
+        },
+        paneContaining(tab) {
+            return this.panes.find(pane => pane.tabs.includes(tab));
+        },
+        newTab(pane, tab) {
+            if (!tab) tab = new this.TabType(this);
+
+            pane.tabs.splice(pane.selected + 1, 0, tab);
+            pane.selected++;
+        },
+        killTab(pane, tab) {
+            remove(pane.tabs, tab);
         },
         selectedTab(pane) {
             return pane.tabs[pane.selected];
@@ -64,6 +49,7 @@ export default {
             <div class="tabs">
                 <span v-for="(tab, idx) in pane.tabs"
                     class="border-2 border-gray-400"
+                    :class="{'bg-gray-400': pane.selected == idx }"
                     @click="pane.selected = idx"
                 >{{ tab.name }}</span>
             </div>
@@ -71,9 +57,9 @@ export default {
                 v-bind="selectedTab(pane).props"
                 v-on="selectedTab(pane).events"
                 @new-pane="newPane"
-                @kill-pane="remove(panes, pane)"
+                @kill-pane="killPane(pane)"
                 @new-tab="newTab(pane)"
-                @kill-tab="remove(pane.tabs, selectedTab(pane))"
+                @kill-tab="killTab(pane, selectedTab(pane))"
             />
         </div>
     </div>
