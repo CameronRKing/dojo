@@ -37,6 +37,7 @@ export default class FileTab {
             save: (path) => this.save(path),
             open: (path) => this.open(path),
             'focus-ast': () => this.paneManager.$emit('focus-ast'),
+            change: (args) => this.paneManager.$emit('change', args),
         }
     }
 

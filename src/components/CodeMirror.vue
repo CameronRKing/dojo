@@ -7,6 +7,7 @@ import 'codemirror/mode/vue/vue.js';
 import 'codemirror/theme/base16-dark.css';
 import Mousetrap from 'mousetrap';
 import FileQuickOpen from '@/components/FileQuickOpen';
+import { pairs } from '@/utils.js';
 
 export default {
     components: {
@@ -63,8 +64,16 @@ export default {
     },
     watch: {
         value(newVal) {
-            if (newVal !== this.value)
+            if (newVal !== this.cm.getValue()) {
+                // if we don't rescroll to where we were,
+                // it moves the cursor to the beginning of the doc
+                const { left, top } = this.cm.getScrollInfo();
                 this.cm.setValue(newVal);
+                this.cm.scrollTo(left, top);
+            }
+        },
+        cmOptions(newVal) {
+            pairs(newVal).forEach(([key, val]) => this.cm.setOption(key, val));
         }
     },
     methods: {
@@ -75,7 +84,7 @@ export default {
             );
             this.cm.setValue(this.value);
             this.cm.on('change', (cm, { from, to, text, removed, origin }) => {
-                this.$emit('input', text);
+                this.$emit('input', cm.getValue());
                 this.$emit('change', { from, to, text, removed, origin });
             });
             this.refresh();

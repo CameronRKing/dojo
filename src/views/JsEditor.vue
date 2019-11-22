@@ -39,8 +39,8 @@ export default {
                 this.$set(this.asts, path, ast);
             }
         },
-        updateAst() {
-            console.log('running');
+        updateAst(args) {
+            console.log(args);
         },
         focusAst() {
             this.$refs.astNav.focus();
