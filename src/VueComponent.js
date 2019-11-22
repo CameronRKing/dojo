@@ -79,6 +79,10 @@ export default class VueComponent {
                 this.script = undefined;
                 results.tree.match({ tag: 'script' }, node => {
                     this.scriptNode = node;
+                    // node.content may be an array of strings instead of one string
+                    // since the JS code is represented as a JS string, slashes need to be double-escaped
+                    // else you get "unterminated string constant" errors because
+                    // the slashes get used up by the parser
                     let content = node.content.join('').replace(/\\/g, '\\\\');
                     this.script = j(content);
                     return node;

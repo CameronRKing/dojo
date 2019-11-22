@@ -84,8 +84,9 @@ export default {
             );
             this.cm.setValue(this.value);
             this.cm.on('change', (cm, { from, to, text, removed, origin }) => {
-                this.$emit('input', cm.getValue());
-                this.$emit('change', { from, to, text, removed, origin });
+                const value = cm.getValue();
+                this.$emit('input', value);
+                this.$emit('change', { path: this.path, content: value });
             });
             this.refresh();
         },

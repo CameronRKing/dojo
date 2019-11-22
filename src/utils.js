@@ -56,6 +56,15 @@ export function lastIdx(arr) {
     return arr.length - 1;
 }
 
+export function debounce(fn, wait) {
+    let lastCall, scheduledCall;
+    return (...args) => {
+        lastCall = Date.now();
+        if (scheduledCall) clearTimeout(scheduledCall);
+        scheduledCall = setTimeout(() => fn(...args), wait);
+    }
+}
+
 import shortcuts from '@/types/shortcuts';
 const typeToShortcut = mapInvert(shortcuts);
 export function showType(type, shouldCapitalize=true) {
