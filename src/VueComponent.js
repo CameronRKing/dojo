@@ -79,7 +79,8 @@ export default class VueComponent {
                 this.script = undefined;
                 results.tree.match({ tag: 'script' }, node => {
                     this.scriptNode = node;
-                    this.script = j(node.content[0]);
+                    let content = node.content.join('').replace(/\\/g, '\\\\');
+                    this.script = j(content);
                     return node;
                 });
                 resolve()

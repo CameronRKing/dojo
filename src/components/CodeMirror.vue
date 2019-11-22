@@ -50,6 +50,7 @@ export default {
                     'Shift-Alt-N': () => this.$emit('kill-tab'),
                     'Shift-Alt-2': () => this.$emit('new-pane'),
                     'Shift-Alt-1': () => this.$emit('kill-pane'),
+                    'Alt-`': () => this.$emit('focus-ast'),
                 }
             }
         }
@@ -58,6 +59,7 @@ export default {
         focus() {
             // it's not the best practice to hit an internal this way,
             // but it's more terse than saving the instance from the ready event
+            console.log('focusing codemirror');
             this.$refs.editor.cminstance.focus();
         },
         save() {

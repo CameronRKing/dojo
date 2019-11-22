@@ -2,7 +2,6 @@
 import j from 'jscodeshift';
 import BasicPanes from '@/components/BasicPanes.vue';
 import AstNavigator from '@/components/AstNavigator.vue';
-import fs from '@/fs-client.js';
 import VueComponent from '@/VueComponent.js';
 import FileTab from '@/FileTab.js';
 
@@ -15,22 +14,41 @@ export default {
     },
     data() {
         return {
-            file: '',
-            ast: null,
+            asts: {},
+            currFile: null,
             FileTab,
         }
     },
-    watch: {
-        file() {
-            this.ast = new VueComponent(this.file);
-            window.ast = this.ast;
-
+    computed: {
+        ast() {
+            if (!(this.currFile && this.asts[this.currFile])) return null;
+            return this.asts[this.currFile];
         }
     },
-    created() {
-        fs.read('src/test/App.vue')
-            .then(file => this.file = file);
-    },
+    methods: {
+        async syncAst({ path, content }) {
+            if (!path) return;
+            this.currFile = path;
+            if (!this.asts[path]) {
+                // since the JS code is represented as a JS string, slashes need to be double-escaped
+                // else you get "unterminated string constant" errors because
+                // the slashes get used up by the parser
+                // console.log(content.replace(/\\/g, '\\\\'))
+                const ast = new VueComponent(content);
+                await ast.ready();
+                this.$set(this.asts, path, ast);
+            }
+        },
+        updateAst() {
+            console.log('running');
+        },
+        focusAst() {
+            this.$refs.astNav.focus();
+        },
+        focusSource() {
+            this.$refs.source.focus();
+        }
+    }
 }
 </script>
 
@@ -38,8 +56,20 @@ export default {
 
 <template>
 <div class="flex h-full">
-    <AstNavigator class="flex-grow flex-1" v-if="ast" :ast="ast" />
-    <BasicPanes :tab-type="FileTab" class="flex-grow flex-1" />
+    <AstNavigator v-if="ast"
+        ref="astNav"
+        :ast="ast"
+        class="flex-grow flex-1"
+        @focus-source="focusSource"
+    />
+
+    <BasicPanes ref="source"
+        :tab-type="FileTab"
+        class="flex-grow flex-1"
+        @select="syncAst"
+        @change="updateAst"
+        @focus-ast="focusAst"
+    />
     <!-- <CodeMirror class="flex-grow flex-1" v-model="file" /> -->
 </div>
 </template>

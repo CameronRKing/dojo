@@ -103,8 +103,15 @@ export default {
         // so if you see a better solution,
         // please, take the time to fix it
         focus(pane) {
+            // select the first pane by default
+            if (!pane && !this.selectedPane) pane = this.panes[0];
+            // or re-focus on the last selected pane
+            if (!pane) pane = this.selectedPane;
+
+            // or focus on a new pane, if given
             this.selectedPane = pane;
             this.$nextTick(() => {
+                this.$emit('select', this.selectedTab(pane));
                 const ref = `selected${this.panes.indexOf(pane)}`;
                 this.$refs[ref][0].focus();
             });

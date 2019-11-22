@@ -28,12 +28,14 @@ export default {
                 ['shift+k', '--childArrayIdx'],
                 ['\\', 'bind current node collection to "node" in console'],
                 ['r < method index >', 'run given method'],
+                ['alt+`', 'focus source code'],
             ],
             bindings: {
                 tab(e) { e.preventDefault(); this.nodePath = this.nodePath.parent; },
                 j() { this.$refs.nodePane.selectPreviewDown(); },
                 k() { this.$refs.nodePane.selectPreviewUp(); },
                 "\\"() { window.node = j(this.nodePath); },
+                'alt+`'() { this.$emit('focus-source'); },
             }
         };
     },
@@ -44,10 +46,10 @@ export default {
                 if (!this.ast) return;
                 await this.ast.ready();
                 this.nodePath = this.ast.script.find(j.Program).get();
-                window.nodePath = this.nodePath;
             }
         },
         nodePath() {
+            this.previewPos = 0;
             this.teardownMethodShortcuts();
             this.setupMethodShortcuts();
         }
@@ -92,6 +94,9 @@ export default {
         }
     },
     methods: {
+        focus() {
+            this.$refs.hiddenInput.focus();
+        },
         teardownMethodShortcuts() {
             this.availableMethods.forEach(([shortcut, _]) => Mousetrap.unbind('r ' + shortcut));
         },
@@ -119,20 +124,23 @@ export default {
             this.teardownArrayNavigation();
         },
         setupArrayNavigation() {
-            console.log('setting up array')
             Mousetrap.bind('shift+j', () => {
-                if (this.previewPos < this.toPreview.length - 1)
+                console.log(this.previewPos, this.previewVal.length);
+                if (this.previewPos < this.previewVal.length - 1) {
                     this.previewPos++;
+                }
             });
             Mousetrap.bind('shift+k', () => {
-                if (this.previewPos > 0)
+                if (this.previewPos > 0) {
                     this.previewPos--;
+                }
             });
         },
         teardownArrayNavigation() {
             Mousetrap.unbind('shift+j');
             Mousetrap.unbind('shift+k');
         },
+        onfocus() { console.log('focused'); },
     }
 }
 </script>
@@ -141,6 +149,7 @@ export default {
 
 <template>
 <div>
+    <input ref="hiddenInput" style="position: absolute; left: -1000px;" @focus="onfocus" class="mousetrap" />
     <NodePath v-if="nodePath" :node-path="nodePath" />
     <NodePane v-if="nodePath" ref="nodePane" :node="nodePath.value" @preview="field => toPreview = field" />
     <div v-if="toPreview">
@@ -153,7 +162,7 @@ export default {
     </div>
     <VPrompts v-bind="{ prompts }" />
 
-    <hr class="brorder-gray-400 border-2 my-2" />
+    <hr class="border-gray-400 border-2 my-2" />
 
     <div class="header">available methods</div>
     <VPrompts :prompts="availableMethods" />

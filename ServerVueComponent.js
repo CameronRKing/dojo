@@ -80,7 +80,8 @@ module.exports = class VueComponent {
                 this.script = undefined;
                 results.tree.match({ tag: 'script' }, node => {
                     this.scriptNode = node;
-                    this.script = j(node.content[0]);
+                    const content = node.content.join('').replace(/\\/g, '\\\\');
+                    this.script = j(content);
                     return node;
                 });
                 resolve()

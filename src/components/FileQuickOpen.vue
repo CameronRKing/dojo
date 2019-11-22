@@ -29,7 +29,7 @@ export default {
     },
     computed: {
         results() {
-            const regex = new RegExp(this.searchStr, 'i');
+            const regex = new RegExp(this.searchStr.replace(/\\/, '\\'), 'i');
             return this.availableFiles.filter(f => f.match(regex));
         }
     },

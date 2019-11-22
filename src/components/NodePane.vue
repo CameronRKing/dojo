@@ -111,7 +111,7 @@ export default {
             <table>
                 <tr v-for="(val, field) in nodeChildren" @click="toPreview = field" :class="childClass(field)">
                     <td class="text-left font-bold">{{ field }}:</td>
-                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => showType(v.type))) : showType(val.type) }}</td>
+                    <td class="text-left">{{ Array.isArray(val) ? JSON.stringify(val.map(v => showType(v.type)), null, 4) : showType(val.type) }}</td>
                 </tr>
             </table>
         </div>
