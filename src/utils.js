@@ -31,6 +31,31 @@ export function remove(arr, item) {
     arr.splice(idx, 1);
 }
 
+export function first(arr) {
+    if (arr.length == 0) throw new Error('Array is empty. Cannot get first item.');
+    return arr[0];
+}
+
+export function last(arr) {
+    return arr[arr.length - 1];
+}
+
+export function next(arr, item) {
+    const idx = arr.indexOf(item);
+    if (idx == arr.length - 1) throw new Error('Item is at end of array. Cannot get next item.');
+    return arr[idx + 1];
+}
+
+export function prev(arr, item) {
+    const idx = arr.indexOf(item);
+    if (idx == 0) throw new Error('Item is at start of array. Cannot get previous item.');
+    return arr[idx - 1];
+}
+
+export function lastIdx(arr) {
+    return arr.length - 1;
+}
+
 import shortcuts from '@/types/shortcuts';
 const typeToShortcut = mapInvert(shortcuts);
 export function showType(type, shouldCapitalize=true) {

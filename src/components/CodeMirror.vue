@@ -4,6 +4,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/keymap/sublime.js';
 import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/theme/base16-dark.css';
+import Mousetrap from 'mousetrap';
 import FileQuickOpen from '@/components/FileQuickOpen';
 
 export default {
@@ -30,6 +31,12 @@ export default {
                     // some Chrome shortcuts can be overridden, but not all
                     // Ctrl-N & Ctrl-T are inviolable
                     'Alt-N': () => this.$emit('new-tab'),
+                    'Alt-]': () => this.$emit('select-tab-right'),
+                    'Alt-[': () => this.$emit('select-tab-left'),
+                    'Shift-Alt-]': () => this.$emit('move-tab-right'),
+                    'Shift-Alt-[': () => this.$emit('move-tab-left'),
+                    'Shift-Ctrl-]': () => this.$emit('select-pane-right'),
+                    'Shift-Ctrl-[': () => this.$emit('select-pane-left'),
                     'Shift-Alt-N': () => this.$emit('kill-tab'),
                     'Shift-Alt-2': () => this.$emit('new-pane'),
                     'Shift-Alt-1': () => this.$emit('kill-pane'),
@@ -62,12 +69,13 @@ export default {
 
 <template>
 <div class="h-full">
-    <FileQuickOpen v-if="opening" @open="open" />
+    <FileQuickOpen v-if="opening" @open="open" @close="opening = false" />
     <codemirror class="h-full"
         ref="editor"
         :value="value"
         @input="e => $emit('input', e)"
         :options="cmOptions"
+        @focus="$emit('focus')"
     ></codemirror>
 </div>
 </template>

@@ -15,12 +15,13 @@ export default {
     },
     mounted() {
         this.$refs.input.focus();
-        Mousetrap.bind('j', () => {
+        Mousetrap.bind('down', () => {
             if (this.highlighted < this.results.length - 1) this.highlighted++;
         });
-        Mousetrap.bind('k', () => {
+        Mousetrap.bind('up', () => {
             if (this.highlighted > 0) this.highlighted--;
         });
+        Mousetrap.bind('esc', () => this.$emit('close'));
     },
     unmounted() {
         Mousetrap.unbind('j');
@@ -44,7 +45,12 @@ export default {
 
 <template>
 <div class="bg-gray-200">
-    <input class="w-full m-1" v-model="searchStr" ref="input" @keydown.enter="$emit('open', results[highlighted])" />
+    <input class="w-full m-1 mousetrap"
+        v-model="searchStr"
+        ref="input"
+        @keydown.enter="$emit('open', results[highlighted])"
+        @keydown.escape="$emit('close')"
+    />
     <ul class="h-64 overflow-x-auto">
         <li v-for="(filePath, idx) in results" class="p-1" :class="{'bg-gray-400': idx == highlighted}">
             <div>{{ name(filePath) }}</div>

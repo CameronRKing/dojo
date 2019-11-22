@@ -1,23 +1,87 @@
 <script>
-import { remove } from '@/utils.js';
+import { remove, first, last, next, prev, lastIdx } from '@/utils.js';
+import Mousetrap from 'mousetrap';
 
 export default {
     props: ['TabType'],
     data() {
         return {
             panes: [],
+            selectedPane: null,
         };
     },
     created() {
         this.newPane();
     },
+    mounted() {
+        Mousetrap.bind('ctrl+shift+]', () => this.moveTabRight())
+        Mousetrap.bind('ctrl+shift+[', () => this.moveTabLeft())
+    },
+    unmounted() {
+
+    },
     methods: {
         remove,
+        moveTabRight() {
+            const pane = this.selectedPane;
+            const tab = this.selectedTab(pane);
+
+            const tabIdx = pane.tabs.indexOf(tab);
+            const paneIdx = this.panes.indexOf(pane);
+
+            // if we're trying to move the last tab, move it to the next pane
+            if (tabIdx == pane.tabs.length - 1) {
+                // unless there is no next pane
+                if (paneIdx == this.panes.length - 1) return;
+
+                if (pane.selected > 0) pane.selected--;
+                pane.tabs.splice(tabIdx, 1);
+                if (pane.tabs.length == 0) pane.tabs.push(new this.TabType(this));
+                const newPane = this.panes[paneIdx + 1];
+                newPane.tabs.unshift(tab);
+                newPane.selected = 0;
+                this.focus(newPane);
+                return;
+            }
+
+            pane.tabs.splice(tabIdx, 1);
+            pane.tabs.splice(tabIdx + 1, 0, tab);
+            pane.selected++;
+            this.focus(pane);
+        },
+        moveTabLeft() {
+            const pane = this.selectedPane;
+            const tab = this.selectedTab(pane);
+
+            const tabIdx = pane.tabs.indexOf(tab);
+            const paneIdx = this.panes.indexOf(pane);
+
+            // if we're trying to move the last tab, move it to the next pane
+            if (tabIdx == 0) {
+                // unless there is no next pane
+                if (paneIdx == 0) return;
+
+                if (pane.tabs.length == 1) pane.tabs.push(new this.TabType(this));
+                pane.tabs.splice(tabIdx, 1);
+                const newPane = this.panes[paneIdx - 1];
+                newPane.tabs.push(tab);
+                newPane.selected = newPane.tabs.length - 1;
+                this.focus(newPane);
+                return;
+            }
+
+            pane.tabs.splice(tabIdx, 1);
+            pane.tabs.splice(tabIdx - 1, 0, tab);
+            pane.selected--;
+            this.focus(pane);
+        },
         newPane(tabs) {
             if (!tabs) {
                 tabs = [new this.TabType(this)];
             }
-            this.panes.push({ tabs, selected: 0 });
+            const newPane = { tabs, selected: 0 };
+            this.panes.push(newPane);
+            this.focus(newPane);
         },
         killPane(pane) {
             remove(this.panes, pane);
@@ -30,12 +94,16 @@ export default {
 
             pane.tabs.splice(pane.selected + 1, 0, tab);
             pane.selected++;
-            this.$nextTick(() => this.focus(pane));
+            this.focus(pane);
         },
         killTab(pane, tab) {
             if (pane.selected > 0) pane.selected--;
+            // if we're killing the last tab, reboot with the default
+            if (pane.tabs.length == 1) {
+                pane.tabs.push(new this.TabType(this));
+            }
             remove(pane.tabs, tab);
-            this.$nextTick(() => this.focus(pane))
+            this.focus(pane);
         },
         selectedTab(pane) {
             return pane.tabs[pane.selected];
@@ -44,8 +112,53 @@ export default {
         // so if you see a better solution,
         // please, take the time to fix it
         focus(pane) {
-            const ref = `selected${this.panes.indexOf(pane)}`;
-            this.$refs[ref][0].focus();
+            this.selectedPane = pane;
+            this.$nextTick(() => {
+                const ref = `selected${this.panes.indexOf(pane)}`;
+                this.$refs[ref][0].focus();
+            });
+        },
+        selectPaneRight() {
+            const idx = this.panes.indexOf(this.selectedPane);
+            if (idx == this.panes.length - 1) return;
+            this.selectedPane = this.panes[idx + 1];
+            this.focus(this.selectedPane);
+        },
+        selectPaneLeft() {
+            const idx = this.panes.indexOf(this.selectedPane);
+            if (idx == 0) return;
+            this.selectedPane = this.panes[idx - 1];
+            this.focus(this.selectedPane);
+        },
+        selectTabRight() {
+            const pane = this.selectedPane;
+            const tab = this.selectedTab(pane);
+            if (tab == last(pane.tabs)) {
+                if (pane == last(this.panes)) return;
+
+                const nextPane = next(this.panes, pane);
+                nextPane.selected = 0;
+                this.focus(nextPane);
+                return;
+            }
+
+            pane.selected++;
+            this.focus(pane);
+        },
+        selectTabLeft() {
+            const pane = this.selectedPane;
+            const tab = this.selectedTab(pane);
+            if (tab == first(pane.tabs)) {
+                if (pane == first(this.panes)) return;
+
+                const nextPane = prev(this.panes, pane);
+                nextPane.selected = lastIdx(nextPane.tabs);
+                this.focus(nextPane);
+                return;
+            }
+
+            pane.selected--;
+            this.focus(pane);
         }
     }
 }
@@ -55,7 +168,7 @@ export default {
 
 <template>
     <div class="flex">
-        <div class="w-full" v-for="(pane, paneIdx) in panes">
+        <div class="w-full" v-for="(pane, paneIdx) in panes" @click="focus(pane)">
             <div class="tabs flex">
                 <span v-for="(tab, idx) in pane.tabs"
                     class="bg-gray-800 px-1 text-white"
@@ -71,6 +184,13 @@ export default {
                 @kill-pane="killPane(pane)"
                 @new-tab="newTab(pane)"
                 @kill-tab="killTab(pane, selectedTab(pane))"
+                @move-tab-right="moveTabRight"
+                @move-tab-left="moveTabLeft"
+                @select-tab-right="selectTabRight"
+                @select-tab-left="selectTabLeft"
+                @select-pane-right="selectPaneRight"
+                @select-pane-left="selectPaneLeft"
+                @focus="selectedPane = pane"
             />
         </div>
     </div>
