@@ -1,5 +1,5 @@
 <script>
-import { codemirror } from 'vue-codemirror';
+import CodeMirror from 'codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/keymap/sublime.js';
 import 'codemirror/mode/javascript/javascript.js';
@@ -10,7 +10,6 @@ import FileQuickOpen from '@/components/FileQuickOpen';
 
 export default {
     components: {
-        codemirror,
         FileQuickOpen,
     },
     props: ['value', 'path'],
@@ -19,6 +18,13 @@ export default {
             cm: null,
             opening: false,
         }
+    },
+    mounted() {
+        window.vm = this;
+        this.initialize();
+    },
+    destroyed() {
+        this.cm.doc.cm.getWrapperElement().remove();
     },
     computed: {
         mode() {
@@ -55,12 +61,30 @@ export default {
             }
         }
     },
+    watch: {
+        value(newVal) {
+            if (newVal !== this.value)
+                this.cm.setValue(newVal);
+        }
+    },
     methods: {
+        initialize() {
+            this.cm = CodeMirror.fromTextArea(
+                this.$refs.textarea,
+                this.cmOptions
+            );
+            this.cm.setValue(this.value);
+            this.cm.on('change', (cm, { from, to, text, removed, origin }) => {
+                this.$emit('input', text);
+                this.$emit('change', { from, to, text, removed, origin });
+            });
+            this.refresh();
+        },
+        refresh() {
+            this.$nextTick(() => this.cm.refresh());
+        },
         focus() {
-            // it's not the best practice to hit an internal this way,
-            // but it's more terse than saving the instance from the ready event
-            console.log('focusing codemirror');
-            this.$refs.editor.cminstance.focus();
+            this.cm.focus();
         },
         save() {
             let path = this.path;
@@ -82,13 +106,7 @@ export default {
 <template>
 <div class="h-full">
     <FileQuickOpen v-if="opening" @open="open" @close="opening = false" />
-    <codemirror class="h-full"
-        ref="editor"
-        :value="value"
-        @input="e => $emit('input', e)"
-        :options="cmOptions"
-        @focus="$emit('focus')"
-    ></codemirror>
+    <textarea class="h-full" ref="textarea" name="codemirror"></textarea>
 </div>
 </template>
 
