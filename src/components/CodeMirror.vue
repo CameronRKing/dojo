@@ -3,6 +3,7 @@ import { codemirror } from 'vue-codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/keymap/sublime.js';
 import 'codemirror/mode/javascript/javascript.js';
+import 'codemirror/mode/vue/vue.js';
 import 'codemirror/theme/base16-dark.css';
 import Mousetrap from 'mousetrap';
 import FileQuickOpen from '@/components/FileQuickOpen';
@@ -17,10 +18,19 @@ export default {
         return {
             cm: null,
             opening: false,
-            cmOptions: {
-                tabSize: 4,
+        }
+    },
+    computed: {
+        mode() {
+            if (!this.path) return 'text/javascript';
+            if (this.path.endsWith('.js')) return 'text/javascript';
+            if (this.path.endsWith('.vue')) return 'text/x-vue';
+        },
+        cmOptions() {
+            return {
+                indentUnit: 4,
                 autofocus: true,
-                mode: 'test/javascript',
+                mode: this.mode,
                 theme: 'base16-dark',
                 lineNumbers: true,
                 line: true,

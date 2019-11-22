@@ -1,6 +1,5 @@
 <script>
 import { remove, first, last, next, prev, lastIdx } from '@/utils.js';
-import Mousetrap from 'mousetrap';
 
 export default {
     props: ['TabType'],
@@ -13,15 +12,7 @@ export default {
     created() {
         this.newPane();
     },
-    mounted() {
-        Mousetrap.bind('ctrl+shift+]', () => this.moveTabRight())
-        Mousetrap.bind('ctrl+shift+[', () => this.moveTabLeft())
-    },
-    unmounted() {
-
-    },
     methods: {
-        remove,
         moveTabRight() {
             const pane = this.selectedPane;
             const tab = this.selectedTab(pane);
@@ -30,9 +21,9 @@ export default {
             const paneIdx = this.panes.indexOf(pane);
 
             // if we're trying to move the last tab, move it to the next pane
-            if (tabIdx == pane.tabs.length - 1) {
+            if (tabIdx == lastIdx(pane.tabs)) {
                 // unless there is no next pane
-                if (paneIdx == this.panes.length - 1) return;
+                if (paneIdx == lastIdx(this.panes)) return;
 
                 if (pane.selected > 0) pane.selected--;
                 pane.tabs.splice(tabIdx, 1);
@@ -65,7 +56,7 @@ export default {
                 pane.tabs.splice(tabIdx, 1);
                 const newPane = this.panes[paneIdx - 1];
                 newPane.tabs.push(tab);
-                newPane.selected = newPane.tabs.length - 1;
+                newPane.selected = lastIdx(newPane.tabs);
                 this.focus(newPane);
                 return;
             }
@@ -120,7 +111,7 @@ export default {
         },
         selectPaneRight() {
             const idx = this.panes.indexOf(this.selectedPane);
-            if (idx == this.panes.length - 1) return;
+            if (idx == lastIdx(this.panes)) return;
             this.selectedPane = this.panes[idx + 1];
             this.focus(this.selectedPane);
         },
@@ -169,7 +160,7 @@ export default {
 <template>
     <div class="flex">
         <div class="w-full" v-for="(pane, paneIdx) in panes" @click="focus(pane)">
-            <div class="tabs flex">
+            <div class="tabs flex bg-gray-400">
                 <span v-for="(tab, idx) in pane.tabs"
                     class="bg-gray-800 px-1 text-white"
                     :class="{'bg-codemirror-dark': pane.selected == idx }"

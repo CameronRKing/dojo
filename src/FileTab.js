@@ -46,6 +46,14 @@ export default class FileTab {
 
     async open(path) {
         const content = await fs.read(path);
+        // if we're in an empty scratch buffer, replace instead of opening a new tab
+        if (!this.path && this.content == '') {
+            this.path = path;
+            this.content = content;
+            this.paneManager.focus(this.paneManager.paneContaining(this));
+            return;
+        }
+
         this.paneManager.newTab(
             this.paneManager.paneContaining(this),
             new this.__proto__.constructor(this.paneManager, path, content)
