@@ -6,6 +6,7 @@ import NodePane from '@/components/NodePane';
 import VPrompts from '@/components/VPrompts';
 import methods from '@/types/methods.js';
 import { pairs } from '@/utils.js';
+import { getNodeParentChain, attemptToFind } from '@/node-utils.js';
 
 export default {
     components: {
@@ -45,7 +46,10 @@ export default {
             async handler() {
                 if (!this.ast) return;
                 await this.ast.ready();
-                this.nodePath = this.ast.script.find(j.Program).get();
+                if (!this.nodePath)
+                    this.nodePath = this.ast.script.find(j.Program).get();
+                else
+                    this.nodePath = attemptToFind(this.ast.script.get(), this.nodePath);
             }
         },
         nodePath() {
@@ -125,7 +129,6 @@ export default {
         },
         setupArrayNavigation() {
             Mousetrap.bind('shift+j', () => {
-                console.log(this.previewPos, this.previewVal.length);
                 if (this.previewPos < this.previewVal.length - 1) {
                     this.previewPos++;
                 }
@@ -140,7 +143,6 @@ export default {
             Mousetrap.unbind('shift+j');
             Mousetrap.unbind('shift+k');
         },
-        onfocus() { console.log('focused'); },
     }
 }
 </script>
@@ -149,7 +151,8 @@ export default {
 
 <template>
 <div>
-    <input ref="hiddenInput" style="position: absolute; left: -1000px;" @focus="onfocus" class="mousetrap" />
+    <!-- only some elements are focusable. an off-page input seemed appropriate for catching focus -->
+    <input ref="hiddenInput" style="position: absolute; left: -1000px;" class="mousetrap" />
     <NodePath v-if="nodePath" :node-path="nodePath" />
     <NodePane v-if="nodePath" ref="nodePane" :node="nodePath.value" @preview="field => toPreview = field" />
     <div v-if="toPreview">

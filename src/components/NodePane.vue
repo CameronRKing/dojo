@@ -1,19 +1,6 @@
 <script>
-import { getFieldNames, getFieldValue } from 'ast-types';
 import { mapInvert, showType } from '@/utils.js';
-
-function nodeAttrs(node) {
-    return getFieldNames(node)
-        .filter(field => node[field] == null || !(Array.isArray(node[field]) || typeof node[field] == 'object'))
-        .reduce((acc, field) => ({ ...acc, [field]: node[field] }), {});
-}
-
-function nodeChildren(node) {
-    const attrs = Object.keys(nodeAttrs(node));
-    return getFieldNames(node)
-        .filter(field => !attrs.includes(field))
-        .reduce((acc, field) => ({ ...acc, [field]: node[field] }), {});
-}
+import { nodeAttrs, nodeChildren } from '@/node-utils.js';
 
 export default {
     props: ['node'],
