@@ -9,6 +9,11 @@ export function pairs(obj) {
     return Object.keys(obj).map(key => [key, obj[key]]);
 }
 
+export function assocIn(modified, toAdd) {
+    pairs(toAdd).forEach(([key, val]) => modified[key] = val);
+    return modified;
+}
+
 export function capitalize(str) {
     return str[0].toUpperCase() + str.slice(1);
 }

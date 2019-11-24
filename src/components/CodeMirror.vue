@@ -21,7 +21,6 @@ export default {
         }
     },
     mounted() {
-        window.vm = this;
         this.initialize();
     },
     destroyed() {

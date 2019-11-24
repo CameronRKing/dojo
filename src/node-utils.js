@@ -1,4 +1,5 @@
 import { getFieldNames, getFieldValue } from 'ast-types';
+import { assocIn } from '@/utils.js';
 
 /**
  * Returns an array of the path from the given node to the root
@@ -68,4 +69,97 @@ export function nodeChildren(node) {
     return getFieldNames(node)
         .filter(field => !attrs.includes(field))
         .reduce((acc, field) => ({ ...acc, [field]: node[field] }), {});
+}
+
+export function getDefaultExport(coll) {
+    const objPath = coll.find(j.ExportDefaultDeclaration)
+        .get()
+        .get('declaration');
+    return j(objPath);  
+}
+
+export function setObjProp(objColl, name, val) {
+    let prop;
+    if (objHasProp(objColl, name)) {
+        prop = findObjProp(objColl, name);
+        prop.get().value.value = parseJSValue(val);
+    } else {
+        prop = objProp(key, val);
+        objColl.get().value.properties.push(prop);
+    }
+    return prop;
+}
+
+export function objHasProp(objColl, name) {
+    return Boolean(objColl.find(j.Identifier, { name }).length);
+}
+
+export function findObjProp(objColl, name) {
+    return objColl.find(j.Identifier, { name }).closest(j.Property);
+}
+
+export function parseJSValue(value) {
+    let val;
+    if (isNode(value)) {
+        val = value.get().value;
+    } else {
+        switch (typeof value) {
+            case 'object':
+                val = object(value);
+                break;
+            case 'function':
+                val = parseFn(value);
+                break;
+            default:
+                val = j.literal(value);
+        }
+    }
+    return val;
+}
+
+export function parseFn(fn) {
+    return j(fn.toString()).find(j.FunctionExpression).get()
+}
+
+export function objProp(key, value, overrides={}) {
+    const prop = j.property('init', j.identifier(key), parseJSValue(value));
+    assocIn(prop, overrides);
+    return prop;
+}
+
+export function object(obj={}) {
+    return j.objectExpression(
+        Object.keys(obj).map(key => objProp(key, obj[key]))
+    )
+}
+
+// is that really the best way to check?
+export function isNode(value) {
+    return typeof value.get == 'function';
+}
+
+export function returnEmptyObject() {
+    return j.functionExpression(
+        null,
+        [], 
+        j.blockStatement([
+            j.returnStatement(
+                j.objectExpression([])
+            )
+        ])
+    );
+}
+
+export function contains(point) {
+    return (node) => node.start <= point && point <= node.end;
+}
+
+// this needs to be a lot more flexible  
+export function toSource(jSrc) {
+    return jSrc.toSource({ quote: 'single', lineTerminator: '\n', tabWidth: 4, arrowParensAlways: true })
+        // Recast seperates multiline object properties by an extra newline on both sides
+        // https://github.com/benjamn/recast/issues/242
+        // the author did it for personal preference and, after years of complaints, has not made it alterable
+        .replace(/,\n\n/mg, ',\n')
+        .replace(/{\n\n/mg, '{\n')
 }

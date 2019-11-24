@@ -59,6 +59,7 @@ export default {
         }
     },
     created() {
+        window.vm = this;
         pairs(this.bindings).forEach(([shortcut, handler]) =>
             Mousetrap.bind(shortcut, handler.bind(this))
         );
