@@ -13,10 +13,17 @@ function readAll(filenames) {
     return Promise.all(filenames.map(read));
 }
 
-function write([filename, contents]) {
+function write([filename, contents], tried=false) {
     return new Promise((resolve, reject) => {
         fs.writeFile(filename, contents, 'utf8', (err, str) => {
-            if (err) reject(err);
+            if (err) {
+                if (err.errno == -4058 && !tried) {
+                    fs.mkdirSync(filename.split('/').slice(0, -1).join('/'), { recursive: true });
+                    write([filename, contents], true);
+                } else {
+                    reject(err);
+                }
+            }
             resolve(str);
         });
     });

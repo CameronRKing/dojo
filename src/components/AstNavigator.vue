@@ -7,7 +7,7 @@ import VPrompts from '@/components/VPrompts';
 import methods from '@/types/methods.js';
 import { pairs } from '@/utils.js';
 import { getNodeParentChain, attemptToFind } from '@/node-utils.js';
-
+    
 export default {
     components: {
         NodePath,

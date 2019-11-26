@@ -45,6 +45,16 @@ export function last(arr) {
     return arr[arr.length - 1];
 }
 
+export function nextIdx(arr, idx) {
+    if (idx < arr.length - 1) return idx++;
+    return idx;
+}
+
+export function prevIdx(arr, idx) {
+    if (idx > 0) return idx--;
+    return idx;
+}
+
 export function next(arr, item) {
     const idx = arr.indexOf(item);
     if (idx == arr.length - 1) throw new Error('Item is at end of array. Cannot get next item.');

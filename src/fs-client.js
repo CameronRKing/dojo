@@ -1,12 +1,4 @@
-const vueBoilerplate = `<script>
-export default {
-    path: __filename,
-}
-</script>
-
-<template>
-<div data-palette="0"></div>
-</template>`
+import { vue as vueBoilerplate } from '@/boilerplate';
 
 export default {
     read(path) {

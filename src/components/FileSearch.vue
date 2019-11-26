@@ -1,5 +1,6 @@
 <script>
 import Mousetrap from 'mousetrap';
+import { nextIdx, prevIdx } from '@/utils.js';
 
 export default {
     props: ['files'],
@@ -11,12 +12,8 @@ export default {
     },
     mounted() {
         this.$refs.input.focus();
-        Mousetrap.bind('down', () => {
-            if (this.highlighted < this.results.length - 1) this.highlighted++;
-        });
-        Mousetrap.bind('up', () => {
-            if (this.highlighted > 0) this.highlighted--;
-        });
+        Mousetrap.bind('down', () => this.highlighted = nextIdx(this.results, this.highlighted));
+        Mousetrap.bind('up', () => this.highlighted = prevIdx(this.results, this.highlighted));
         Mousetrap.bind('esc', () => this.$emit('close'));
     },
     unmounted() {
@@ -30,8 +27,18 @@ export default {
         }
     },
     methods: {
+        setSearch(str) {
+          	this.searchStr = str;  
+        },
         name(filePath) {
             return filePath.split('\\').slice(-1)[0];
+        },
+        handleEnter() {
+            if (this.results.length) {
+                this.$emit('open', this.results[this.highlighted])
+            } else {
+                this.$emit('create', this.searchStr);
+            }
         }
     }
 }
@@ -44,7 +51,7 @@ export default {
     <input class="w-full m-1 mousetrap"
         v-model="searchStr"
         ref="input"
-        @keydown.enter="$emit('open', results[highlighted])"
+        @keydown.enter="handleEnter"
         @keydown.escape="$emit('close')"
     />
     <ul class="h-64 overflow-x-auto">
@@ -55,6 +62,10 @@ export default {
         >
             <div>{{ name(filePath) }}</div>
             <div class="text-xs text-gray-800">{{ filePath }}</div>
+        </li>
+        <li v-if="results.length == 0">
+            <div>Create "{{ searchStr }}"?</div>
+            <div class="text-xs text-gray-800">[ press enter to create ]</div>
         </li>
     </ul>
 </div>

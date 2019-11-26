@@ -6,8 +6,10 @@ import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/vue/vue.js';
 import 'codemirror/theme/base16-dark.css';
 import Mousetrap from 'mousetrap';
-import FileSearch from '@/components/FileSearch';
 import { pairs } from '@/utils.js';
+import fs from '@/fs-client.js';
+import FileSearch from '@/components/FileSearch';
+import { vue as VUE_BOILERPLATE} from '@/boilerplate.js';
 
 function wordAtCursor(cm) {
     const doc = cm.getDoc();
@@ -60,6 +62,7 @@ export default {
                         else {
                             this.files = vueFiles;
                             this.importing = true;
+                            this.$nextTick(() => this.$refs.search.setSearch(word));
                         }
                     },
                     'Ctrl-S': () => this.save(),
@@ -144,6 +147,22 @@ export default {
                 this.importing = false;
                 this.$emit('import-component', path);
             }
+        },
+        async handleCreate(path) {
+            const createAndOpen = async () => {
+                let starter = '';
+                if (path.endsWith('.vue')) starter = VUE_BOILERPLATE;
+                await fs.write(path, starter);
+                this.$emit('open', path);
+            }
+            if (this.opening) {
+                this.opening = false;
+                createAndOpen();
+            } else if (this.importing) {
+                this.importing = false;
+                this.$emit('import-component', path);
+                createAndOpen();
+            }
         }
     }
 }
@@ -153,7 +172,13 @@ export default {
 
 <template>
 <div class="h-full">
-    <FileSearch v-if="searching" :files="files" @open="open" @close="searching = false" />
+    <FileSearch v-if="searching"
+        ref="search"
+        :files="files"
+        @open="open"
+        @close="searching = false"
+        @create="handleCreate"
+    />
     <textarea class="h-full" ref="textarea" name="codemirror"></textarea>
 </div>
 </template>
