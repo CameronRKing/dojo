@@ -1,4 +1,4 @@
-import { getFieldNames, getFieldValue } from 'ast-types';
+import { getFieldNames, getFieldValue, namedTypes as n } from 'ast-types';
 import { assocIn } from '@/utils.js';
 
 /**
@@ -98,10 +98,17 @@ export function findObjProp(objColl, name) {
     return objColl.find(j.Identifier, { name }).closest(j.Property);
 }
 
+/**
+ * Turns a JavaScript value into its corresponding AST type
+ * If given a jscodeshift collection, returns the first node in it
+ * If given an AST node, returns the AST node
+ **/
 export function parseJSValue(value) {
     let val;
-    if (isNode(value)) {
+    if (isNodeCollection(value)) {
         val = value.get().value;
+    } else if (isNode(value)) {
+        val = value;
     } else {
         switch (typeof value) {
             case 'object':
@@ -115,6 +122,14 @@ export function parseJSValue(value) {
         }
     }
     return val;
+}
+
+/**
+ * Returns an AST node created from a given string
+ * Assumes that there is only one statement in the string
+ **/
+export function parse(str) {
+    return j(str).find(j.Program).get().value.body[0];
 }
 
 export function parseFn(fn) {
@@ -134,8 +149,12 @@ export function object(obj={}) {
 }
 
 // is that really the best way to check?
+export function isNodeCollection(value) {
+    return typeof value == 'object' && typeof value.get == 'function';
+}
+
 export function isNode(value) {
-    return typeof value.get == 'function';
+    return n.Node.check(value);
 }
 
 export function returnEmptyObject() {

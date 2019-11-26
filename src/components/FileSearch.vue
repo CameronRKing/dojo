@@ -1,17 +1,13 @@
 <script>
-import fs from '@/fs-client.js';
 import Mousetrap from 'mousetrap';
 
 export default {
+    props: ['files'],
     data() {
         return {
             searchStr: '',
-            availableFiles: [],
             highlighted: 0,
         }
-    },
-    async created() {
-        this.availableFiles = await fs.srcFiles();
     },
     mounted() {
         this.$refs.input.focus();
@@ -30,7 +26,7 @@ export default {
     computed: {
         results() {
             const regex = new RegExp(this.searchStr.replace(/\\/, '\\'), 'i');
-            return this.availableFiles.filter(f => f.match(regex));
+            return this.files.filter(f => f.match(regex));
         }
     },
     methods: {
@@ -52,7 +48,11 @@ export default {
         @keydown.escape="$emit('close')"
     />
     <ul class="h-64 overflow-x-auto">
-        <li v-for="(filePath, idx) in results" class="p-1" :class="{'bg-gray-400': idx == highlighted}">
+        <li v-for="(filePath, idx) in results"
+            class="p-1"
+            :class="{'bg-gray-400': idx == highlighted}"
+            @click="$emit('open', results[idx])"
+        >
             <div>{{ name(filePath) }}</div>
             <div class="text-xs text-gray-800">{{ filePath }}</div>
         </li>

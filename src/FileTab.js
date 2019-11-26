@@ -10,6 +10,7 @@ export default class FileTab {
         this.paneManager = paneManager;
         this.path = path;
         this.content = content;
+        this.lastSaved = content;
     }
 
     get name() {
@@ -24,6 +25,10 @@ export default class FileTab {
         return CodeMirror;
     }
 
+    get isDirty() {
+        return this.content != this.lastSaved;
+    }
+
     get props() {
         return {
             value: this.content,
@@ -36,6 +41,7 @@ export default class FileTab {
             input: (str) => this.content = str,
             save: (path) => this.save(path),
             open: (path) => this.open(path),
+            'import-component': (path) => this.paneManager.$emit('import-component', path, this),
             'focus-ast': () => this.paneManager.$emit('focus-ast'),
             change: (args) => this.paneManager.$emit('change', args),
         }
@@ -43,22 +49,33 @@ export default class FileTab {
 
     save(path) {
         if (!this.path) this.path = path;
+        this.lastSaved = this.content;
         fs.write(this.path, this.content);
+    }
+
+    close() {
+        if (this.isDirty) {
+            const shouldSave = window.prompt('Save before closing? [enter anything to save]');
+            if (shouldSave) {
+                this.save(this.path);
+            }
+        }
+        return true;
     }
 
     async open(path) {
         const content = await fs.read(path);
-        // if we're in an empty scratch buffer, replace instead of opening a new tab
-        if (!this.path && this.content == '') {
-            this.path = path;
-            this.content = content;
-            this.paneManager.focus(this.paneManager.paneContaining(this));
-            return;
-        }
+        const pane = this.paneManager.paneContaining(this);
 
         this.paneManager.newTab(
-            this.paneManager.paneContaining(this),
+            pane,
             new this.__proto__.constructor(this.paneManager, path, content)
         );
+
+        // if we're in an empty scratch buffer, kill it
+        if (!this.path && this.content == '') {
+            this.paneManager.killTab(pane, this);
+        }
+
     }
 }

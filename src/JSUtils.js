@@ -1,52 +1,5 @@
 const j = require('jscodeshift');
 
-function contains(point) {
-    return (node) => node.start <= point && point <= node.end;
-}
-
-// this needs to be a lot more flexible  
-function toSource(jSrc) {
-    return jSrc.toSource({ quote: 'single', lineTerminator: '\n', tabWidth: 4, arrowParensAlways: true })
-        // Recast seperates multiline object properties by an extra newline on both sides
-        // https://github.com/benjamn/recast/issues/242
-        // the author did it for personal preference and, after years of complaints, has not made it alterable
-        .replace(/,\n\n/mg, ',\n')
-        .replace(/{\n\n/mg, '{\n')
-}
-
-
-function object(obj={}) {
-    return j.objectExpression(
-        Object.keys(obj).map(key => objectProperty(key, obj[key]))
-    )
-}
-
-function objectProperty(key, value) {
-    return j.property('init', j.identifier(key), parseValue(value));
-}
-
-// c'mon. surely I don't have to write my own parsing logic?
-// there's gotta be a better way to turn a real-life JS value into its AST equivalent
-function parseValue(value) {
-    let val;
-    if (isNode(value)) {
-        val = value.get().value;
-    } else {
-        if (typeof value == 'object') {
-            val = object(value);
-        } else {
-            val = j.literal(value);
-        }
-
-    }
-    return val;
-}
-
-// is that really the best way to check?
-function isNode(value) {
-    return typeof value.get == 'function';
-}
-
 // I don't like that this class deals only with arrow functions (and is poorly named!)
 // the argument logic applies equally to normal functions
 class AnonymousFunction {
@@ -155,6 +108,3 @@ const toFnAt = (src, idx, cb) => {
     cb(fn)
     return toSource(jSrc);
 }
-
-Object.keys()
-function wrappedRoutes;

@@ -27,7 +27,7 @@ export default {
                 ['enter', 'select highlighted child'],
                 ['shift+j', '++childArrayIdx'],
                 ['shift+k', '--childArrayIdx'],
-                ['\\', 'bind current node collection to "node" in console'],
+                ['\\\\', 'bind current node collection to "node" in console'],
                 ['r < method index >', 'run given method'],
                 ['alt+`', 'focus source code'],
             ],
@@ -35,7 +35,7 @@ export default {
                 tab(e) { e.preventDefault(); this.nodePath = this.nodePath.parent; },
                 j() { this.$refs.nodePane.selectPreviewDown(); },
                 k() { this.$refs.nodePane.selectPreviewUp(); },
-                "\\"() { window.node = j(this.nodePath); },
+                "\\\\"() { window.node = j(this.nodePath); },
                 'alt+`'() { this.$emit('focus-source'); },
             }
         };
@@ -43,13 +43,14 @@ export default {
     watch: {
         ast: {
             immediate: true,
-            async handler() {
-                if (!this.ast) return;
-                await this.ast.ready();
+            async handler(newVal) {
+                if (!newVal) return;
+                await newVal.ready();
                 if (!this.nodePath)
-                    this.nodePath = this.ast.script.find(j.Program).get();
+                    this.nodePath = newVal.script.find(j.Program).get();
                 else
-                    this.nodePath = attemptToFind(this.ast.script.get(), this.nodePath);
+                    this.nodePath = attemptToFind(newVal.script.get(), this.nodePath);
+                this.$forceUpdate();
             }
         },
         nodePath() {
@@ -59,7 +60,6 @@ export default {
         }
     },
     created() {
-        window.vm = this;
         pairs(this.bindings).forEach(([shortcut, handler]) =>
             Mousetrap.bind(shortcut, handler.bind(this))
         );
@@ -153,11 +153,11 @@ export default {
 <template>
 <div>
     <!-- only some elements are focusable. an off-page input seemed appropriate for catching focus -->
-    <input ref="hiddenInput" style="position: absolute; left: -1000px;" class="mousetrap" />
+    <input ref="hiddenInput" style="position: absolute; left: -1000px;" class="mousetrap">
     <NodePath v-if="nodePath" :node-path="nodePath" />
     <NodePane v-if="nodePath" ref="nodePane" :node="nodePath.value" @preview="field => toPreview = field" />
     <div v-if="toPreview">
-        <hr class="border-gray-400 border-2" />
+        <hr class="border-gray-400 border-2">
         <div class="header">child preview</div>
         <div v-if="Array.isArray(previewVal)">
             selected child: {{ previewPos + 1 }} of {{ previewVal.length }}
@@ -166,7 +166,7 @@ export default {
     </div>
     <VPrompts v-bind="{ prompts }" />
 
-    <hr class="border-gray-400 border-2 my-2" />
+    <hr class="border-gray-400 border-2 my-2">
 
     <div class="header">available methods</div>
     <VPrompts :prompts="availableMethods" />

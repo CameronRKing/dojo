@@ -88,6 +88,8 @@ export default {
             this.focus(pane);
         },
         killTab(pane, tab) {
+            if (!tab.close()) return;
+
             if (pane.selected > 0) pane.selected--;
             // if we're killing the last tab, reboot with the default
             if (pane.tabs.length == 1) {
@@ -169,10 +171,13 @@ export default {
         <div class="w-full" v-for="(pane, paneIdx) in panes" @click="focus(pane)">
             <div class="tabs flex bg-gray-400">
                 <span v-for="(tab, idx) in pane.tabs"
-                    class="bg-gray-800 px-1 text-white"
+                    class="bg-gray-800 px-1 text-white flex items-center"
                     :class="{'bg-codemirror-dark': pane.selected == idx }"
                     @click="pane.selected = idx"
-                >{{ tab.name }}</span>
+                >{{ tab.name }}
+                    <span @click="tab.close()" v-if="!tab.isDirty" class="text-gray-600 ml-1">x</span>
+                    <div @click="tab.close()" v-else class="inline-block h-2 w-2 ml-1 rounded-full bg-gray-600"></div>
+                </span>
             </div>
             <component :is="selectedTab(pane).component"
                 :ref="`selected${paneIdx}`"

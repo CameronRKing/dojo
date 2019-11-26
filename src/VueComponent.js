@@ -6,16 +6,16 @@ const {
     toSource, setObjProp,
     findObjProp, getDefaultExport,
     objProp, returnEmptyObject,
-    object
+    object, parse
 } = require('./node-utils.js');
-
+const { render } = require('@/htmlrender.js');
 
 export default class VueComponent {
     constructor(text) {
         this.isDone = new Promise(resolve => {
             // push HTML processing into a separate component
             // then the HTML-specific methods can follow it
-            posthtml().process(text).then(results => {
+            posthtml().process(text, { recognizeSelfClosing: true, closingSingleTag: 'slash', render }).then(results => {
                 this.results = results;
                 this.tree = results.tree;
                 this.script = undefined;
@@ -29,6 +29,7 @@ export default class VueComponent {
                     this.script = j(content);
                     return node;
                 });
+                if (!this.script) this.script = j('');
                 resolve()
             });
         });
@@ -36,6 +37,22 @@ export default class VueComponent {
 
     addPath() {
         this.findOrCreate('path', j.identifier('__filename'));
+    }
+
+    importComponent(path) {
+        const cmpName = path.split('/').slice(-1)[0].split('.')[0];
+        // add import statement
+        const statement = parse(`import ${cmpName} from '${path}';`);
+        this.addToTop(statement);
+
+        // register inside component
+        const components = this.findOrCreate('components', object());
+        const cmpProp = objProp(cmpName, j.identifier(cmpName), { shorthand: true });
+        components.get().value.value.properties.push(cmpProp);
+    }
+
+    addToTop(statement) {
+        this.script.find(j.Program).get().value.body.unshift(statement);
     }
 
     ready() {

@@ -6,18 +6,27 @@ import 'codemirror/mode/javascript/javascript.js';
 import 'codemirror/mode/vue/vue.js';
 import 'codemirror/theme/base16-dark.css';
 import Mousetrap from 'mousetrap';
-import FileQuickOpen from '@/components/FileQuickOpen';
+import FileSearch from '@/components/FileSearch';
 import { pairs } from '@/utils.js';
+
+function wordAtCursor(cm) {
+    const doc = cm.getDoc();
+    const { line, ch } = doc.getCursor();
+    const { anchor, head } = cm.findWordAt({ line, ch });
+    return doc.getRange(anchor, head);
+}
 
 export default {
     components: {
-        FileQuickOpen,
+        FileSearch,
     },
     props: ['value', 'path'],
     data() {
         return {
             cm: null,
             opening: false,
+            importing: false,
+            files: [],
         }
     },
     mounted() {
@@ -42,6 +51,17 @@ export default {
                 line: true,
                 keyMap: 'sublime',
                 extraKeys: {
+                    'F1': async () => {
+                        const vueFiles = await fs.vueFilesIn('.');
+                        const word = wordAtCursor(this.cm);
+                        const matches = vueFiles.filter(f => f.match(word));
+                        if (matches.length == 1)
+                            this.$emit('import-component', matches[0].replace('src', '@'));
+                        else {
+                            this.files = vueFiles;
+                            this.importing = true;
+                        }
+                    },
                     'Ctrl-S': () => this.save(),
                     'Ctrl-P': () => this.opening = true,
                     // some Chrome shortcuts can be overridden, but not all
@@ -59,6 +79,14 @@ export default {
                     'Alt-`': () => this.$emit('focus-ast'),
                 }
             }
+        },
+        searching: {
+            get() {
+                return this.opening || this.importing;
+            },
+            set(val) {
+                this.opening = this.importing = val;
+            }
         }
     },
     watch: {
@@ -70,6 +98,12 @@ export default {
                 this.cm.setValue(newVal);
                 this.cm.scrollTo(left, top);
             }
+        },
+        async opening(newVal) {
+            if (newVal)
+                this.files = await fs.srcFiles();
+            else 
+                this.files = [];
         },
         cmOptions(newVal) {
             pairs(newVal).forEach(([key, val]) => this.cm.setOption(key, val));
@@ -103,8 +137,13 @@ export default {
             this.$emit('save', path);
         },
         open(path) {
-            this.opening = false;
-            this.$emit('open', path);
+            if (this.opening) {
+                this.opening = false;
+                this.$emit('open', path);
+            } else if (this.importing) {
+                this.importing = false;
+                this.$emit('import-component', path);
+            }
         }
     }
 }
@@ -114,7 +153,7 @@ export default {
 
 <template>
 <div class="h-full">
-    <FileQuickOpen v-if="opening" @open="open" @close="opening = false" />
+    <FileSearch v-if="searching" :files="files" @open="open" @close="searching = false" />
     <textarea class="h-full" ref="textarea" name="codemirror"></textarea>
 </div>
 </template>
