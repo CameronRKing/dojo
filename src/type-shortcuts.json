@@ -1,0 +1,7 @@
+{
+    "ExpDef": "ExportDefaultDeclaration",
+    "ObjExp": "ObjectExpression",
+    "FnExp": "FunctionExpression",
+    "Prop": "Property",
+    "Id": "Identifier"
+}

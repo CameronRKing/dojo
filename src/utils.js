@@ -80,6 +80,13 @@ export function debounce(fn, wait) {
     }
 }
 
+// given a dot-separated path,
+// returns the instantiated object tree that it represents
+// with the given value at the very end
+export function hydratePath(path, val) {
+    return path.split('.').reverse().reduce((acc, val) => ({ [val]: acc} ), val);
+}
+
 import shortcuts from '@/types/shortcuts';
 const typeToShortcut = mapInvert(shortcuts);
 export function showType(type, shouldCapitalize=true) {
