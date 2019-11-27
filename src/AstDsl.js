@@ -1,12 +1,18 @@
 const { visit: recastVisit } = require('ast-types');
 const typeShortcuts = require('./type-shortcuts.json')
 const j = require('jscodeshift');
-const matchNode = require('jscodeshift/dist/matchNode.js');
-const Collection = require('jscodeshift/dist/Collection.js');
+// be careful to use jscodeshift/src instead of j/dist
+// I ran into an wonky issue with method registration
+// dist/Collection didn't recognize registered methods,
+// because jscodeshift does everything through the src directory
+// so what is /dist for?
+const matchNode = require('jscodeshift/src/matchNode.js');
+const Collection = require('jscodeshift/src/Collection.js');
+const defaultBuilders = require('./defaultBuilders.js');
 
 function expand(type) {
-    if (j[type]) return type;
     if (typeShortcuts[type]) return typeShortcuts[type];
+    if (j[type]) return type;
     throw new Error(`${type} not found in ast-types or type-shortcuts.`);
 }
 
@@ -14,6 +20,53 @@ function hydratePath(path, val) {
     return path.split('.').reverse().reduce((acc, val) => ({ [val]: acc} ), val);
 }
 
+function getFilter(el, filters) {
+    let remains, filterStr, filter, newEl = el;
+    if (el.includes('[')) {
+        [newEl, filterStr] = el.split('[')
+        // ready for a weird bug? if I remove this if statement, filterStr is suddenly undefined
+        // checking for the bug somehow fixes it
+        // WHAT?
+        if (!filterStr) console.log('no filter string!');
+        [filterStr, remains] = filterStr.split(']');
+        const [attr, val] = filterStr.split('=');
+        if (val)
+            filter = hydratePath(attr, val);
+        else
+            filter = filters[attr];
+    }
+    return [filter, newEl + (remains ? remains : '')];
+}
+
+/**
+ * Given an element clause and the result of building the clause after it,
+ * Create a new AST node as best we can by deducing things from the context
+ **/
+function defaultBuilder(el, arg) {
+    let builderArg = {};
+    let type = el;
+    // we can deduce a values from the filter clause
+    if (el.includes('[')) {
+        let filter;
+        [filter, el] = getFilter(el, {});
+        type = el;
+        if (typeof filter == 'object')
+            Object.assign(builderArg, filter);
+    }
+    // if the element includes a direct reference to an attr, we know where the arg belongs
+    if (el.includes('.')) {
+        let attr;
+        [type, attr] = el.split('.');
+        builderArg[attr] = arg;
+    }
+    if (!Object.keys(builderArg).length) builderArg = arg;
+    return defaultBuilders[expand(type)](builderArg);
+}
+
+function edit(node, newNode) {
+    if (node.get().value.type == 'ObjectExpression') // there's only one thing to do to an object: push a property
+        node.forEach(path => path.value.properties.push(newNode));
+}
 
 j.registerMethods({
     // exactly the same as find, but there's a check in the visitor
@@ -46,22 +99,24 @@ j.registerMethods({
 
         return Collection.fromPaths(paths, this, type);
     },
-});
+}, j.Node);
 
 class AstDsl {
     constructor(ast) {
         this.ast = ast;
     }
 
-    find(str, filters) {
+    // may god have mercy on my soul
+    // for the sins I have worked here
+    find(str, filters={}, { lastFound=false }={}) {
         const elements = str.split(' ');
         let node = this.ast;
         let shouldBreak = false;
-        let lastFound = '< none >';
+        let lastIdx = null;
         let directDescendant = false;
         let attr = '';
         // this function is an awful mess of spaghetti code
-        elements.forEach(el => {
+        elements.forEach((el, idx) => {
             if (shouldBreak) return;
             // check for a direct descendant indicator
             if (el == '>') {
@@ -69,31 +124,28 @@ class AstDsl {
                 return;
             }
 
-            // check for a filter based on the node's attributes
             let filter;
-            if (el.includes('[')) {
-                filter = el.split('[')[1].replace(']', '');
-                el = el.split('[')[0];
-                const [attr, val] = filter.split('=');
-                if (val)
-                    filter = hydratePath(attr, val);
-                else
-                    filter = filters[attr];
-            }
+            [filter, el] = getFilter(el, filters);
 
+            // if looking for a direct descendant in an attribute,
+            // filter the attributes by the given type
+            // if we're not looking for a direct descendant, find will work fine
             let newNode;
             if (attr) {
                 attr = '';
                 if (directDescendant) {
                     directDescendant = false;
-                    newNode = node.filter(path =>
-                        j[expand(el)].check(path.value) && (filter ? matchNode(filter, path.value) : true)
-                    );
+
+                    newNode = this.filter(node, el, filter);
+
                     if (!newNode.length) {
                         shouldBreak = true;
+                        return;
                     }
-                    lastFound = el;
+
+                    lastIdx = idx;
                     node = newNode;
+
                     return;
                 }
             }
@@ -113,22 +165,47 @@ class AstDsl {
             }
 
             if (attr) {
+                // can't reset attr yet because we don't yet know if
+                // there's further logic to filter these nodes thorugh
                 newNode = newNode.map(path => path.get(attr));
             }
 
             if (!newNode.length) {
+                lastIdx = idx;
                 shouldBreak = true;
+                return;
             }
-            lastFound = el;
             node = newNode;
         });
+        if (shouldBreak && !lastFound) return null;
+        if (shouldBreak && lastFound) return [node, elements.slice(lastIdx).join(' ')];
+        return node;
+    }
+
+    filter(node, el, filter) {
+        return node.filter(path =>
+            j[expand(el)].check(path.value) && (filter ? matchNode(filter, path.value) : true)
+        );
+    }
+
+    set(str, filters) {
+        let [node, pathRemaining] = this.find(str, filters, { lastFound: true });
+        if (!pathRemaining) return node;
+        const newNode = pathRemaining.replace(/> /g, '').replace('  ', ' ').split(' ').reverse()
+            .reduce((acc, el) => {
+                return defaultBuilder(el, acc);
+            }, null);
+        // I've got almost all of it
+        // it's this last bit that I don't quite know how to do
+        // instead of building a whole new node, I want to edit it
+        edit(node, newNode);
         return node;
     }
 }
 
 module.exports = AstDsl
 
-function test() {
+function testFind() {
     const $ = new AstDsl(j('const woo = "woo woo"; export default { data() { return { foo: "bar", baz: "dont panic", woo }; } }'));
     // indirect searching
     let node = $.find('ExpDef ObjExp FnExp');
@@ -155,6 +232,21 @@ function test() {
     console.log(node.length == 5);
     node = $.find('Prop.value > Id');
     console.log(node.length == 1);
+
+    node = $.find('ExpDef > ObjExp > Prop > FnExp');
+    console.log(node.length == 1);
 }
 
-test();
+function testSet() {
+    const $ = new AstDsl(j('export default {}'));
+    let node = $.set('ExpDef > ObjExp > Prop[key.name=data].value > FnExp > BlockSt > Return > ObjExp');
+    console.log(node.toSource().replace(/\r\n/g, '\n') ==
+`export default {
+  data() {
+    return {};
+  }
+};`);
+}
+
+// testFind();
+testSet();

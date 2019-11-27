@@ -3,5 +3,7 @@
     "ObjExp": "ObjectExpression",
     "FnExp": "FunctionExpression",
     "Prop": "Property",
-    "Id": "Identifier"
+    "Id": "Identifier",
+    "Return": "ReturnStatement",
+    "BlockSt": "BlockStatement"
 }
