@@ -3,6 +3,7 @@ import VueComponent from '@/VueComponent.js';
 
 
 describe('Adding data', () => {
+    const script = (js) => `<script>${js}</script>`;
     const dataExists = `export default {
     data() {
         return {
@@ -18,7 +19,6 @@ describe('Adding data', () => {
         };
     }
 };`;
-
 
     [[
         'adds to a string to an existing object',
@@ -70,10 +70,13 @@ describe('Adding data', () => {
     }
 };`
     ]].forEach(([name, start, action, end]) => {
-        it(name, () => {
-            const cmp = new VueComponent(start);
-            action(cmp);
-            expect(cmp.toString()).to.equal(end)
+        it(name, (done) => {
+            const cmp = new VueComponent(script(start));
+            cmp.ready().then(() => {
+                action(cmp);
+                expect(cmp.toString()).to.equal(script(end))
+                done()
+            });
         })
     })
 })

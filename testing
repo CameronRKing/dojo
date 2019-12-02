@@ -1,0 +1,62 @@
+testing
+
++ should reveal how to use the thing to accomplish a goal
+    - easy to read, easy to understand, easy to modify
++ should serve as documentation for consumers of the module under test
+    - only a subset of the tests may be relevant (ignore path testing)
+    - e.g., "given that I want to do this, how do I do it?"
++ should be crazy easy to write
+    - friction points:
+        - setting up testing environment
+        - creating a test
+        - generating data/stubbing the environment
+            => in terms of Vue components:
+                = props, slots, child components, $store, $router, API calls
+                = more? (will discover as I write tests)
++ should be crazy easy to run
+    - selecting only certain suites/tests
+    - running on change
+        => compile time is the big issue
++ should be crazy easy to interpret
+    - minimal, informative reporters integrated with editor
+    - easy-to-build custom reporters
+    - interactive stack traces
+    - I'm imagining something between a debugger and println
+        => inline evaluation (given a frame of reference, show values in the code itself; capture a set of values over time)
++ should be crazy easy to interact with
+    - jump to debugger with a REPL at any point
+        => should have "back up" function
+
+
+What is the ideal flow?
+There can't be a single flow, because we write different tests for different reasons.
+Focus on building components for now.
+
+
+===========
+VUE TESTING
+===========
+
+Tests will run in the browser (for now).
+Tests might fuck up/be fucked up by the global scope, but I'll deal with that later.
+describe/it syntax is pretty good.
+    - issue: how do I pull a component out for each test?
+        + can't do beforeEach, because setup might happen in-test
+        + could rely on a cmp variable in the describe block,
+            then watch it. Every time it gets assigned to, we match the assignment to a test.
+How will I handle results? Don't know yet. Ideally I'll have an API that throws events that I can hook up to Vue components.
+will need a good way to stub the environment (and share stubbing with stories)
+    - ideally, would build itself as much as possible
+        + run a test, figure out what it relies on, add a stub for it
+        + API call data = fixtures generated from endpoint tests (common practice)
+        + grab values from acceptance tests/live environment?
+
+
+=======
+THE MAP
+=======
+
+1) using describe/it syntax, run a single test in the browser unmounted and report results on-page + make available as data structure in console
+2) optionally mount the test
+3) choose which tests to run on command
+4) choose which tests to run in watch mode

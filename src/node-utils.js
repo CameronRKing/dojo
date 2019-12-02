@@ -78,10 +78,10 @@ export function getDefaultExport(coll) {
     return j(objPath);  
 }
 
-export function setObjProp(objColl, name, val) {
+export function setObjProp(objColl, key, val) {
     let prop;
-    if (objHasProp(objColl, name)) {
-        prop = findObjProp(objColl, name);
+    if (objHasProp(objColl, key)) {
+        prop = findObjProp(objColl, key);
         prop.get().value.value = parseJSValue(val);
     } else {
         prop = objProp(key, val);
