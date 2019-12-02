@@ -22,43 +22,78 @@ Mocha.prototype.loadFiles = function(fn) {
 };
 
 
+// now what I need to do is link rendered components to tests
+
 export default {
     data() {
         return {
             mocha: null,
             runner: null,
-            testToCmp: {},
+            tests: [],
         }
     },
-    created() {
-        const mocha = new Mocha();
-        this.mocha = mocha;
-        window.mocha = mocha;
+    watch: {
+        tests: {
+            deep: true,
+            handler(newVal) {
+                const ref = test => this.$refs[test.title] && this.$refs[test.title][0];
+                const mount = (context) => {
+                    ref(context.test).appendChild(context.cmp.vm.$el);
+                    context.mounted = true;
+                }
+                const unmount = (context) => {
+                    const el = ref(context.test);
+                    el.removeChild(el.lastChild);
+                    context.mounted = false;
+                }
 
-        mocha.addFile('MyButton.spec.js');
-        const runner = mocha.run();
+                newVal.forEach(context => {
+                    const { test, render, mounted } = context;
+                    if (render && !mounted) {
+                        mount(context);
+                    } else if (!render && mounted) {
+                        unmount(context);
+                    }
+                });
 
-        let currTest = null;
-        runner.on(constants.EVENT_TEST_BEGIN, (test) => currTest = test);
-        runner.on(constants.EVENT_TEST_END, (test) => currTest = null);
-
-        window.t2c = this.testToCmp;
-        window.cmps = [];
-        onMount(cmp => {
-            cmps.push(cmp);
-            console.log('running');
-            if (currTest) {
-                this.testToCmp[currTest.title] = cmp;
-                // can't $mount directly because the component thinks it's already mounted
-                this.$refs.mounter.appendChild(cmp.vm.$el);
             }
-        });
+        },  
+    },
+    created() {
+        window.vm = this;
+        this.run();
+    },
+    methods: {
+        run() {
+            const mocha = new Mocha();
+            this.mocha = mocha;
+            window.mocha = mocha;
+
+            mocha.unloadFiles();
+            mocha.addFile('MyButton.spec.js');
+            const runner = mocha.run();
+
+            let currTest = null;
+            runner.on(constants.EVENT_TEST_BEGIN, (test) => currTest = test);
+            runner.on(constants.EVENT_TEST_END, (test) => currTest = null);
+
+            onMount(cmp => {
+                if (currTest) {
+                    this.tests.push({ test: currTest, cmp, render: false, mounted: false });
+                }
+            });
+        },
     }
 }
 </script>
 
-
-
 <template>
-    <div id="mounter" ref="mounter">Mocha runner</div>
+<div>
+    <button @click="run">Run tests</button>
+    <div v-for="context in tests">
+        <h2>{{ context.test.title }}</h2>
+        <label>render<input type="checkbox" v-model="context.render" /></label>
+        <div :ref="context.test.title"></div>
+    </div>
+</div>
 </template>
