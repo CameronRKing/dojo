@@ -5,20 +5,25 @@ import Suite from 'mocha/lib/suite.js';
 import { onMount } from '@/../tests/unit/test-utils.js';
 
 const constants = Runner.constants;
-var EVENT_FILE_PRE_REQUIRE = Suite.constants.EVENT_FILE_PRE_REQUIRE;
-var EVENT_FILE_POST_REQUIRE = Suite.constants.EVENT_FILE_POST_REQUIRE;
-var EVENT_FILE_REQUIRE = Suite.constants.EVENT_FILE_REQUIRE;
+const {
+    EVENT_FILE_PRE_REQUIRE,
+    EVENT_FILE_POST_REQUIRE,
+    EVENT_FILE_REQUIRE,
+} = Suite.constants;
 
 Mocha.prototype.loadFiles = function(fn) {
   var self = this;
   var suite = this.suite;
   this.files.forEach(function(file) {
-    // file = path.resolve(file);
     suite.emit(EVENT_FILE_PRE_REQUIRE, global, file, self);
     suite.emit(EVENT_FILE_REQUIRE, require('@/../tests/unit/' + file), file, self);
     suite.emit(EVENT_FILE_POST_REQUIRE, global, file, self);
   });
   fn && fn();
+};
+
+Mocha.unloadFile = function(file) {
+  delete require.cache[require.resolve(`@/../tests/unit/${file}`)];
 };
 
 
@@ -30,6 +35,7 @@ export default {
             mocha: null,
             runner: null,
             tests: [],
+            toRender: {'can be mounted directly to the DOM': true},
         }
     },
     watch: {
@@ -37,9 +43,14 @@ export default {
             deep: true,
             handler(newVal) {
                 const ref = test => this.$refs[test.title] && this.$refs[test.title][0];
-                const mount = (context) => {
-                    ref(context.test).appendChild(context.cmp.vm.$el);
-                    context.mounted = true;
+                const mount = (context, tried=false) => {
+                    if (!ref(context.test)) {
+                        if (tried) throw new Error('unable to find mounting point for ' + context.test.title);
+                        this.$nextTick(() => mount(context, true))
+                    } else {
+                        ref(context.test).appendChild(context.cmp.vm.$el);
+                        context.mounted = true;
+                    }
                 }
                 const unmount = (context) => {
                     const el = ref(context.test);
@@ -64,13 +75,17 @@ export default {
         this.run();
     },
     methods: {
+        shouldRender(test) {
+            return this.toRender[test.title];
+        },
         run() {
+            this.tests = [];
             const mocha = new Mocha();
             this.mocha = mocha;
             window.mocha = mocha;
 
-            mocha.unloadFiles();
             mocha.addFile('MyButton.spec.js');
+            mocha.unloadFiles();
             const runner = mocha.run();
 
             let currTest = null;
@@ -79,8 +94,15 @@ export default {
 
             onMount(cmp => {
                 if (currTest) {
-                    this.tests.push({ test: currTest, cmp, render: false, mounted: false });
+                    this.tests.push({
+                        test: currTest,
+                        cmp,
+                        render: this.shouldRender(currTest),
+                        mounted: false
+                    });
                 }
+                // if there is no current test, then we need to check if we're inside a test hook
+                // then save the component for the next text to come along
             });
         },
     }
