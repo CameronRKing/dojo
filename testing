@@ -58,5 +58,31 @@ THE MAP
 
 1) using describe/it syntax, run a single test in the browser unmounted and report results on-page + make available as data structure in console
 2) optionally mount the test
-3) choose which tests to run on command
-4) choose which tests to run in watch mode
+3) report results in expanded/succinct ways
+    - rather than gathering all the data myself, it seems best to use mochawesome
+    - I'll just ignore the report generator and write my own with Vue components
+
+Now that I have a basic test runner, I need to integrate it into the editor.
+
+Given a file (.vue/.js), I should be able to find the unit tests or prompt to bootstrap them if not found.
+    - for now, assume tests/unit/{{ matching path to current file under src directory }}
+    - bootstrapping is simple. import assertions, component, mount, then drop cmp name in describe block.
+There should be a shortcut for adding new tests + marking them async/using done callback
+    - simple. ask for a name, then drop cursor inside the function. use shortcuts to trigger async/done.
+Once there are tests in the file, it should be easy to select and run them.
+    - I imagine a small pane that expands from the bottom of the screen.
+        + when folded, it indicates the number of tests that passed, the overall time, and whether it is running
+        + when open, it lists all tests, shows which ones are running, and give keyboard access to turning a test on/off
+        + creating new tests can be done in here, too
+    - there'll need to be a global shortcut for running the selected tests
+        + if "ctrl+r" toggles the pane, then "ctrl+shift+r" should run it
+    - the pane can report pass/fail in-context, but detailed diffs will require more screenspace (a modal? a full pane?)
+Then I can worry about stories
+    - component factories: functions that return a component mounted by vue-test-utils
+        + actually, they'll have to use my intercepted version, but that's a small detail
+        + then I can use the factory in tests, too.
+        + if I mount a component directly in a test, I should be able to refactor it easily into a factory
+    - the context should be interactive (e.g., editing props on the fly, stubbing/passing through network requests)
+
+I'll make my way back to expectThat some day. Maybe this week, maybe not.
+Eventually I'll need to write my own debug pane, since the official one kinda sucks.
