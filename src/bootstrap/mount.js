@@ -7,7 +7,7 @@ import MochaRunner from '@/components/testing/MochaRunner.vue';
 window.fs = fs;
 window.HtmlEditor = HtmlEditor;
 window.JsEditor = JsEditor;
-window.toMount = MochaRunner;
+window.toMount = JsEditor;
 window.mt = async (cmp) => {
     if (typeof cmp == 'string') {
         toMount = await getCmp(cmp);

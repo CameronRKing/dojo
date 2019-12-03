@@ -1,10 +1,10 @@
 import { expect } from 'chai';
+import { mount, shallowMount } from '@/../tests/unit/test-utils.js';
 import MyButton from '@/components/MyButton.vue';
-import { mount } from './test-utils.js';
 
 describe('MyButton', () => {
-    it('can be mounted directly to the DOM', () => {
+    it('new tests', () => {
         const cmp = mount(MyButton);
         expect(cmp.isVueInstance()).to.be.true;
     });
-})
+});

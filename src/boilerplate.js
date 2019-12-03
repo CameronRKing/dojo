@@ -11,7 +11,7 @@ export default {
 export const mochaTestVue = (srcPath) => {
     const cmpName = srcPath.split('/').slice(-1)[0].split('.')[0];
     return `import { expect } from 'chai';
-import { mount, shallowMount } from './test-utils.js';
+import { mount, shallowMount } from '@/../tests/unit/test-utils.js';
 import ${cmpName} from '${srcPath.replace('src', '@')}';
 
 describe('${cmpName}', () => {

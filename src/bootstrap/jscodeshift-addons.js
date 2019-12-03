@@ -3,6 +3,9 @@ import methods from '@/types/methods';
 import { pairs, mapWithKeys } from '@/utils';
 import fs from '@/fs-client';
 
+window.j = j;
+
+// register user methods for jscodeshift collections
 pairs(methods).forEach(([type, handlers]) => {
     const wrappedHandlers = mapWithKeys(
         pairs(handlers).map(([name, fn]) => {
@@ -11,6 +14,7 @@ pairs(methods).forEach(([type, handlers]) => {
     );
     j.registerMethods(wrappedHandlers, j[type])
 });
+
 
 window.addMethod = async function(type, method) {
     const file = await fs.read('src/types/methods.js');
@@ -31,7 +35,7 @@ window.addMethod = async function(type, method) {
         .get().value
         .properties.push(fnProp);
 
-        fs.write('src/types/methods.js', jSrc.toSource());
+    fs.write('src/types/methods.js', jSrc.toSource());
 }
 
 import shortcuts from '@/types/shortcuts.json';

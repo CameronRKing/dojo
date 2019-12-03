@@ -7,8 +7,6 @@ import VueComponent from '@/VueComponent.js';
 import FileTab from '@/FileTab.js';
 import { debounce } from '@/utils.js';
 
-window.j = j;
-
 export default {
     components: {
         BasicPanes,

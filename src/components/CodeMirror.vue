@@ -10,6 +10,7 @@ import { pairs } from '@/utils.js';
 import fs from '@/fs-client.js';
 import FileSearch from '@/components/FileSearch';
 import { vue as VUE_BOILERPLATE} from '@/boilerplate.js';
+import TestingPanel from '@/components/testing/TestingPanel';
 
 function wordAtCursor(cm) {
     const doc = cm.getDoc();
@@ -21,6 +22,7 @@ function wordAtCursor(cm) {
 export default {
     components: {
         FileSearch,
+        TestingPanel,
     },
     props: ['value', 'path'],
     data() {
@@ -80,6 +82,8 @@ export default {
                     'Shift-Alt-2': () => this.$emit('new-pane'),
                     'Shift-Alt-1': () => this.$emit('kill-pane'),
                     'Alt-`': () => this.$emit('focus-ast'),
+                    'Ctrl-R': () => this.runTests(),
+                    'Alt-R': () => this.focusTests(),
                 }
             }
         },
@@ -163,6 +167,12 @@ export default {
                 this.$emit('import-component', path);
                 createAndOpen();
             }
+        },
+        runTests() {
+            this.$refs.tests.run();
+        },
+        focusTests() {
+            this.$refs.tests.focus();
         }
     }
 }
@@ -180,6 +190,12 @@ export default {
         @create="handleCreate"
     />
     <textarea class="h-full" ref="textarea" name="codemirror"></textarea>
+
+    <TestingPanel v-if="path && (path.endsWith('.js') || path.endsWith('.vue'))"
+        :path="path"
+        ref="tests"
+        @blur="focus"
+    />
 </div>
 </template>
 
