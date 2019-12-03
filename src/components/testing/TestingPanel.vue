@@ -22,6 +22,16 @@ async function getTest(path) {
 
 export default {
     props: ['path'],
+    watch: {
+        path: {
+            immediate: true,
+            async handler(newPath) {
+                this.suite = null;
+                let file = await getTest(newPath);
+                if (file) this.suite = new MochaTest(file);
+            }
+        },
+    },
     data() {
         return {
             suite: null,
@@ -31,8 +41,9 @@ export default {
             bindings: {
                 'alt+r'() { this.expanded = false; this.$emit('blur'); },
                 'h'() { this.expanded = !this.expanded; },
-                'enter'() { this.run(); },
+                'enter'() { this.suite ? this.run() : this.createSuite() },
                 'a'() { this.addTest(); },
+                'e'() { this.openSuite(); },
             },
             mousetrap: null,
         }
@@ -62,27 +73,19 @@ export default {
         pairs(this.bindings).forEach(([shortcut]) => this.mousetrap.unbind(shortcut));
         this.mousetrap = null;
     },
-    watch: {
-        path: {
-            immediate: true,
-            async handler(newPath) {
-                let file = await getTest(newPath);
-                if (file) this.suite = new MochaTest(file);
-            }
-        },
-    },
     methods: {
         createSuite() {
             return fs.write(this.testPath, mochaTestVue(this.path));
+        },
+        openSuite() {
+            this.$emit('open', this.testPath);
         },
         save() {
             if (!this.suite) return;
             return fs.write(this.testPath, this.suite.toString());
         },
         addTest() {
-            console.log('running addTest');
             const name = window.prompt('Enter test name');
-            console.log(name);
             if (!name) return;
             this.suite.addTest(name);
             this.save();

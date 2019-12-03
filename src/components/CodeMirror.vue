@@ -195,6 +195,7 @@ export default {
         :path="path"
         ref="tests"
         @blur="focus"
+        @open="path => this.$emit('open', path)"
     />
 </div>
 </template>
