@@ -87,6 +87,11 @@ export function hydratePath(path, val) {
     return path.split('.').reverse().reduce((acc, val) => ({ [val]: acc} ), val);
 }
 
+export function s(...exp) {
+    console.log(...exp);
+    return exp;
+}
+
 import shortcuts from '@/types/shortcuts';
 const typeToShortcut = mapInvert(shortcuts);
 export function showType(type, shouldCapitalize=true) {

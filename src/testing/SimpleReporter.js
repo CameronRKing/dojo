@@ -24,6 +24,7 @@ export default class SimpleReporter {
                 if (onPass) onPass(test, time);
             })
             .on(EVENT_TEST_FAIL, (test, err) => {
+                const time = Date.now() - startTime;
                 if (onFail) onFail(test, time, err);
             })
             .once(EVENT_RUN_END, () => {
