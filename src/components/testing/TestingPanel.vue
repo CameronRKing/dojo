@@ -36,7 +36,7 @@ export default {
     data() {
         return {
             suite: null,
-            expanded: false,
+            expanded: true,
             lastRunTime: 0,
             results: [],
             bindings: {
@@ -135,11 +135,17 @@ export default {
         run() {
             const runner = new MochaRunner([this.testPath.split('unit/')[1]]);
             this.results.splice(0, this.results.length);
+            let testNum = 1;
             runner.run({
+                onTestStart(test) {
+                    console.log(`${testNum++}) ${test.title}`);
+                },
                 onPass: (test, time) => {
+                    console.log('    pass');
                     this.results.push({ test, time, passed: true });
                 },
                 onFail: (test, time, err) => {
+                    console.log(err);
                     this.results.push({ test, time, err, passed: false });
                 },
                 onDone: (stats) => {
@@ -150,15 +156,27 @@ export default {
         isRunning(test) {
             return this.running.find(r => r.title == test.title);
         },
+        getTestResults(title) {
+            return this.results.find(res => res.test.title == title);
+        },
         getIcon(test) {
-            if (!this.isRunning(test)) return "not running";
-            const res = this.results.find(res => res.test.title == test.title);
-            if (!res) return "not yet run";
-            if (res) return res.passed ? 'passed' : 'failed';
+            if (!this.isRunning(test)) return 'not_interested';
+            const res = this.getTestResults(test.title);
+            if (!res) return 'play_circle_filled';
+            if (res) return res.passed ? 'check_circle' : 'error';
+        },
+        isPassing(test) {
+            const res = this.getTestResults(test.title);
+            if (!res) return true;
+            return res.passed;
         },
         focus() {
             if (!this.expanded) this.expanded = true;
             this.$refs.input.focus();
+        },
+        toggleExpanded() {
+            console.log('toggling');
+            this.expanded = !this.expanded;
         }
     }
 }
@@ -167,11 +185,11 @@ export default {
 
 
 <template>
-<div class="fixed bottom-0 right-0 bg-gray-800 text-white p-1" ref="body">
-    <div @click="expanded = !expanded">
+<div class="fixed bottom-0 right-0 bg-gray-800 text-white p-1 z-10" ref="body">
+    <div @click="toggleExpanded">
         <input class="mousetrap opacity-0 absolute" ref="input" />
         <template v-if="!suite">No test suite found</template>
-        <template v-if="suite" @click="expanded = !expanded">
+        <template v-if="suite" @click="toggleExpanded">
             {{ lastRunTime }}s {{ failing }}f {{ passing }}p {{ running.length }}r {{ suite.tests().length }}t
         </template>
     </div>
@@ -179,13 +197,11 @@ export default {
         <div v-if="!suite" @click="createSuite">Create test suite</div>
         <template v-if="suite">
             <table class="w-full">
-                <tr v-for="test in suite.tests()" :class="{ 'text-gray-600 italic': !isRunning(test) }">
+                <tr v-for="test in suite.tests()" :class="{ 'text-gray-600 italic': !isRunning(test), 'font-bold': !isPassing(test) }">
                     <td>{{ test.title }}</td>
-                    <td class="text-center"><i>{{ getIcon(test) }}</i></td>
+                    <td class="text-center"><i class="material-icons">{{ getIcon(test) }}</i></td>
                 </tr>
             </table>
-            <div @click="addTest" class="text-center italic">Add test</div>
-            <div @click="run" class="text-center italic">Run tests</div>
         </template>
     </div>
 </div>

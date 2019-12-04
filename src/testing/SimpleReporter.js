@@ -12,12 +12,12 @@ const {
 
 export default class SimpleReporter {
     constructor(runner, { reporterOptions }) {
-        const { onStart, onPass, onFail, onDone } = reporterOptions;
+        const { onTestStart, onPass, onFail, onDone } = reporterOptions;
         let startTime = null;
         runner
             .on(EVENT_TEST_BEGIN, test => {
                 startTime = Date.now();
-                if (onStart) onStart(test);
+                if (onTestStart) onTestStart(test);
             })
             .on(EVENT_TEST_PASS, test => {
                 const time = Date.now() - startTime;
