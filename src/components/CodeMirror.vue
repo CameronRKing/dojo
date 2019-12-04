@@ -24,7 +24,7 @@ export default {
         FileSearch,
         TestingPanel,
     },
-    props: ['value', 'path'],
+    props: ['doc', 'path'],
     data() {
         return {
             cm: null,
@@ -97,6 +97,9 @@ export default {
         }
     },
     watch: {
+        // this watcher is from when the contents were passed in directly
+        // now that value changes happen in FileTab,
+        // how will i track them and reset the scroll view?
         value(newVal) {
             if (newVal !== this.cm.getValue()) {
                 // if we don't rescroll to where we were,
@@ -105,6 +108,9 @@ export default {
                 this.cm.setValue(newVal);
                 this.cm.scrollTo(left, top);
             }
+        },
+        doc(newDoc) {
+            this.cm.swapDoc(newDoc);
         },
         async opening(newVal) {
             if (newVal)
@@ -122,10 +128,9 @@ export default {
                 this.$refs.textarea,
                 this.cmOptions
             );
-            this.cm.setValue(this.value);
+            this.cm.swapDoc(this.doc);
             this.cm.on('change', (cm, { from, to, text, removed, origin }) => {
                 const value = cm.getValue();
-                this.$emit('input', value);
                 this.$emit('change', { path: this.path, content: value });
             });
             this.refresh();
@@ -191,7 +196,7 @@ export default {
     />
     <textarea class="h-full" ref="textarea" name="codemirror"></textarea>
 
-    <TestingPanel v-if="path && (path.endsWith('.js') || path.endsWith('.vue'))"
+    <TestingPanel v-if="path && !path.endsWith('.spec.js') && (path.endsWith('.js') || path.endsWith('.vue'))"
         :path="path"
         ref="tests"
         @blur="focus"

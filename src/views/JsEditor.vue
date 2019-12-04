@@ -39,6 +39,7 @@ export default {
             this.currFile = path;
         },
         focusAst() {
+            if (!this.$refs.astNav) return;
             this.$refs.astNav.focus();
         },
         focusSource() {
@@ -56,12 +57,12 @@ export default {
 
 <template>
 <div class="flex h-full">
-    <AstNavigator v-if="ast"
+<!--     <AstNavigator v-if="ast"
         ref="astNav"
         :ast="ast"
         class="flex-grow flex-1"
         @focus-source="focusSource"
-    />
+    /> -->
 
 <!--     <ComponentPane v-if="ast"
 		ref="cmpPane"

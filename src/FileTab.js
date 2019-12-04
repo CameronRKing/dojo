@@ -1,4 +1,5 @@
 import CodeMirror from '@/components/CodeMirror.vue';
+import CM from 'codemirror';
 import fs from '@/fs-client.js';
 
 export default class FileTab {
@@ -9,7 +10,7 @@ export default class FileTab {
     constructor(paneManager, path=null, content='') {
         this.paneManager = paneManager;
         this.path = path;
-        this.content = content;
+        this.doc = CM.Doc(content);
         this.lastSaved = content;
     }
 
@@ -31,14 +32,21 @@ export default class FileTab {
 
     get props() {
         return {
-            value: this.content,
+            doc: this.doc,
             path: this.path,
         };
     }
 
+    set content(val) {
+        this.doc.setValue(val);
+    }
+
+    get content() {
+        return this.doc.getValue();
+    }
+
     get events() {
         return {
-            input: (str) => this.content = str,
             save: (path) => this.save(path),
             open: (path) => this.open(path),
             'import-component': (path) => this.paneManager.$emit('import-component', path, this),
