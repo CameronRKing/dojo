@@ -18,7 +18,6 @@ async function forVueCmpInDir(dir, cb) {
 }
 
 async function addDataIdsTo(file) {
-    console.log(file);
     const str = await fs.read(file);
     const cmp = new VueComponent(str);
     await cmp.ready();
@@ -53,5 +52,5 @@ module.exports = {
     removeDataIds,
     addDataIdsTo,
     // a little cleanup hack for now
-    disconnect: () => removeDataIds('src/test'),
+    // disconnect: () => removeDataIds('src/test'),
 };
