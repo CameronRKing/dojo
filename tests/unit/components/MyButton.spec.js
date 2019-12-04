@@ -3,8 +3,9 @@ import { mount, shallowMount } from '@/../tests/unit/test-utils.js';
 import MyButton from '@/components/MyButton.vue';
 
 describe('MyButton', () => {
-    it('new tests', () => {
+    it('first', () => {
         const cmp = mount(MyButton);
         expect(cmp.isVueInstance()).to.be.true;
     });
+    it('new name', () => {});
 });

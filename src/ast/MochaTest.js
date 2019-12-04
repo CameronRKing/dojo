@@ -4,7 +4,7 @@ import { parse, toSource } from '@/node-utils.js';
 function hasOnly(testFnPath) {
     // it() is as a plain identifier
     // it.only() is a member expression
-    return j.MemberExpression.check(testFnPath.get('callee'));
+    return j.MemberExpression.check(testFnPath.get('callee').value);
 }
 
 export default class MochaTest {
@@ -32,9 +32,21 @@ export default class MochaTest {
             .body.body
             .push(parse(`
     it('${testName}', () => {});
-
 `));
         return this;
+    }
+
+    renameTest(testName, newName) {
+        this.jSrc.find(j.Literal, { value: testName })
+            .get()
+            .replace(j.literal(newName));
+    }
+
+    deleteTest(testName) {
+        this.jSrc.find(j.Literal, { value: testName })
+            .closest(j.ExpressionStatement)
+            .get()
+            .replace(null);
     }
 
     setTestOnly(testName) {
@@ -53,6 +65,19 @@ export default class MochaTest {
         const it = test.get('callee');
         it.replace(j.identifier('it'));    
         return this;
+    }
+
+    toggleOnly(testName) {
+        const test = this.jSrc.find(j.Literal, { value: testName })
+            .closest(j.CallExpression)
+            .get();
+        hasOnly(test) ? this.unsetTestOnly(testName) : this.setTestOnly(testName);
+    }
+
+    removeAllOnlys() {
+        this.jSrc.find(j.Identifier, { name: 'it' })
+            .closest(j.CallExpression)
+            .forEach(path => path.get('callee').replace(j.identifier('it')));
     }
 
     toString() {

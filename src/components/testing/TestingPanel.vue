@@ -29,6 +29,7 @@ export default {
                 this.suite = null;
                 let file = await getTest(newPath);
                 if (file) this.suite = new MochaTest(file);
+                this.setupTestShortcuts();
             }
         },
     },
@@ -44,7 +45,9 @@ export default {
                 'enter'() { this.suite ? this.run() : this.createSuite() },
                 'a'() { this.addTest(); },
                 'e'() { this.openSuite(); },
+                's'() { this.suite.removeAllOnlys(); this.save(); },
             },
+            boundIndices: [],
             mousetrap: null,
         }
     },
@@ -66,14 +69,37 @@ export default {
         },
     },
     mounted() {
+        window.vm = this;
         this.mousetrap = new Mousetrap(this.$refs.body);
         pairs(this.bindings).forEach(([shortcut, handler]) => this.mousetrap.bind(shortcut, handler.bind(this)));
     },
     unmounted() {
         pairs(this.bindings).forEach(([shortcut]) => this.mousetrap.unbind(shortcut));
+        this.teardownTestShortcuts();
         this.mousetrap = null;
     },
     methods: {
+        setupTestShortcuts() {
+            if (!this.suite) return;
+            this.suite.tests().forEach((test, idx) => {
+                this.boundIndices.push(idx + 1);
+                this.mousetrap.bind(`${idx+1} o`, () => this.toggleOnly(test.title));
+                this.mousetrap.bind(`${idx+1} r`, () => this.renameTest(test.title));
+                this.mousetrap.bind(`${idx+1} d`, () => this.deleteTest(test.title));
+            });
+        },
+        teardownTestShortcuts() {
+            this.boundIndices.forEach(idx => {
+                this.mousetrap.unbind(`${idx} o`);
+                this.mousetrap.unbind(`${idx} r`);
+                this.mousetrap.unbind(`${idx} d`);
+            });
+            this.boundIndices = [];
+        },
+        refreshTestShortcuts() {
+            this.teardownTestShortcuts();
+            this.setupTestShortcuts();
+        },
         createSuite() {
             return fs.write(this.testPath, mochaTestVue(this.path));
         },
@@ -89,6 +115,22 @@ export default {
             if (!name) return;
             this.suite.addTest(name);
             this.save();
+            this.refreshTestShortcuts();
+        },
+        renameTest(testName) {
+            const name = window.prompt('Enter new test name');
+            if (!name) return;
+            this.suite.renameTest(testName, name);
+            this.save();
+        },
+        toggleOnly(testName) {
+            this.suite.toggleOnly(testName);
+            this.save();
+        },
+        deleteTest(testName) {
+            this.suite.deleteTest(testName);
+            this.save();
+            this.refreshTestShortcuts();
         },
         run() {
             const runner = new MochaRunner([this.testPath.split('unit/')[1]]);
