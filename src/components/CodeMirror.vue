@@ -67,6 +67,11 @@ export default {
                             this.$nextTick(() => this.$refs.search.setSearch(word));
                         }
                     },
+                    'F3': () => {
+                        const rawPos = this.cm.getDoc().indexFromPos(this.cm.getDoc().getCursor());
+                        const scriptStart = this.cm.getValue().indexOf('<script>');
+                        this.$emit('wrap-in-spy', rawPos - scriptStart - '<script>\n'.length);
+                    },
                     'Ctrl-S': () => this.save(),
                     'Ctrl-P': () => this.opening = true,
                     // some Chrome shortcuts can be overridden, but not all

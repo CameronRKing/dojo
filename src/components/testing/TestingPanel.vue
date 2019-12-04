@@ -145,7 +145,7 @@ export default {
                     this.results.push({ test, time, passed: true });
                 },
                 onFail: (test, time, err) => {
-                    console.log(err);
+                    console.log(err.message, err.stack);
                     this.results.push({ test, time, err, passed: false });
                 },
                 onDone: (stats) => {

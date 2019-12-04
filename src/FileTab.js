@@ -1,6 +1,12 @@
 import CodeMirror from '@/components/CodeMirror.vue';
 import CM from 'codemirror';
 import fs from '@/fs-client.js';
+import VueComponent from '@/VueComponent.js';
+
+// The AST should exist right here, next to the file contents.
+// Clients who need to consume one or the other can ask for it
+// BasicPanes can expose which FileTabs are currently active (visible, focused)
+
 
 export default class FileTab {
     // I tried removing content from the constructor
@@ -12,6 +18,9 @@ export default class FileTab {
         this.path = path;
         this.doc = CM.Doc(content);
         this.lastSaved = content;
+        // getting the AST should be handled by some other module
+        if (path && path.endsWith('.vue'))
+            this.ast = new VueComponent(content);
     }
 
     get name() {
@@ -49,9 +58,16 @@ export default class FileTab {
         return {
             save: (path) => this.save(path),
             open: (path) => this.open(path),
-            'import-component': (path) => this.paneManager.$emit('import-component', path, this),
             'focus-ast': () => this.paneManager.$emit('focus-ast'),
-            change: (args) => this.paneManager.$emit('change', args),
+            'wrap-in-spy': (pos) => {
+                this.ast.wrapInSpy(pos);
+                this.content = this.ast.toString();
+            },
+            'import-component': (path) => {
+                this.ast.importComponent(path);
+                this.content = this.ast.toString();
+            },
+            change: (args) => { console.warn('NEED TO REWRITE LOGIC FOR SYNCING AST'); },
         }
     }
 

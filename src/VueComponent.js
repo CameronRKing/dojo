@@ -6,7 +6,8 @@ const {
     toSource, setObjProp,
     findObjProp, getDefaultExport,
     objProp, returnEmptyObject,
-    object, parse
+    object, parse,
+    contains,
 } = require('./node-utils.js');
 const { render } = require('@/htmlrender.js');
 
@@ -49,6 +50,17 @@ export default class VueComponent {
         const components = this.findOrCreate('components', object());
         const cmpProp = objProp(cmpName, j.identifier(cmpName), { shorthand: true });
         components.get().value.value.properties.push(cmpProp);
+    }
+
+    wrapInSpy(pos) {
+        const nodes = this.script.find(j.Node, contains(pos));
+        const lastNode = nodes.at(nodes.length - 1).get();
+        lastNode.replace(j.callExpression(j.identifier('s'), [lastNode.value]));
+
+        const hasImport = this.script.find(j.ImportSpecifier, { imported: { name: 's' } }).length != 0;
+        if (!hasImport) this.addToTop(parse(`import { s } from '@/utils.js';`));
+
+        return this;
     }
 
     addToTop(statement) {
