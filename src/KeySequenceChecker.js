@@ -1,5 +1,14 @@
 import Mousetrap from 'mousetrap';
 
+function debounce(fn, wait) {
+    let lastCall, scheduledCall;
+    return (...args) => {
+        lastCall = Date.now();
+        if (scheduledCall) clearTimeout(scheduledCall);
+        scheduledCall = setTimeout(() => fn(...args), wait);
+    }
+}
+
 const modifiers = [
     {binding: 'ctrl', attr: 'ctrlKey', key: 'Control'},
     {binding: 'alt', attr: 'altKey', key: 'Alt'},
@@ -18,7 +27,8 @@ export default class KeySequenceChecker {
         this.sequence = sequence;
         this.handlers = { success, failure };
         this.keydowns = [];
-
+        this.alertFailure = null;
+        
         if (this.sequence) {
             this.initialize();
         }
@@ -32,15 +42,8 @@ export default class KeySequenceChecker {
 
     initialize() {
         this.keydowns = [];
-        this.mousetrap.bind(this.sequence, () => this.alertSuccess());
-    }
-
-    alertSuccess() {
-        this.emit('success');
-    }
-
-    alertFailure() {
-        this.emit('failure', this.stringifyKeydowns());
+        this.mousetrap.bind(this.sequence, () => this.emit('success'));
+        this.alertFailure = debounce(() => this.emit('failure', this.stringifyKeydowns()), 300);
     }
 
     emit(event, payload) {
@@ -68,18 +71,10 @@ export default class KeySequenceChecker {
         this.keydowns.push(event);
         // for some reason I cannot discover, pressing 'Alt' in an input in Chrome focuses away
         if (event.key == "Alt") event.preventDefault();
-
+        
+        if (this.isModifier(event)) return;
+        
         const nextCombo = this.getNextKeyCombo(event);
-
-        if (this.isModifier(event)) {
-            modifiers.forEach(({ key, binding }) => {
-                if (event.key == key && !nextCombo.includes(binding)) {
-                    this.alertFailure(event)
-                }
-            })
-            return;
-        }
-
         if (this.isWrong(nextCombo, event)) {
             this.alertFailure();
         }

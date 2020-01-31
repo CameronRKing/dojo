@@ -2,7 +2,12 @@
 import KeySequenceChecker from '../KeySequenceChecker';
 
 export default {
-    props: ['expected', 'prompt'],
+    props: {
+        expected: {},
+        prompt: {
+            default: ''
+        }
+    },
     data() {
         return {
             checker: null,
@@ -19,7 +24,12 @@ export default {
             this.checker.setSequence(val);
         }
     },
-}
+    methods: {
+        focus() {
+            this.$refs.input.focus();
+        }
+    }
+};
 </script>
 
 
@@ -31,5 +41,5 @@ export default {
         data-cy="key-input"
         :placeholder="prompt"
         @input="(e) => e.target.value = ''"
-    />
+     />
 </template>

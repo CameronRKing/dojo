@@ -1,4 +1,5 @@
 <script>
+import CenterAlign from '@/components/CenterAlign.vue';
 import KeyInput from './KeyInput';
 import ShowSentence from './ShowSentence';
 import ProgressBar from './ProgressBar';
@@ -8,24 +9,20 @@ export default {
         KeyInput,
         ShowSentence,
         ProgressBar,
+        CenterAlign
     },
     data() {
         return {
             toTrain: [
-                { action: 'Underline text', sequence: 'ctrl+u' },
-                { action: 'Bold text', sequence: 'ctrl+b' },
+                { prompt: 'Underline text', action: 'ctrl+u' },
+                { prompt: 'Bold text', action: 'ctrl+b' },
             ],
-            item: null,
+            shortcut: null,
             message: '',
             completed: [],
             errors: [],
-            animateClass: '',
             startTime: null,
-            showOptions: {
-                show: false,
-                type: 'always',
-                threshold: 1,
-            },
+            missedQuestion: false,
         };
     },
     created() {
@@ -36,26 +33,12 @@ export default {
             this.initialize()
         }
     },
-    computed: {
-        prompt() {
-            if (!this.showOptions.show) return '';
-            const shouldShow = {
-                always: () => true,
-                time: () => this.secondsPassed() >= this.showOptions.threshold,
-                // grab the last X errors and show the answer if they're all 
-                guesses: () => this.errors.slice(-this.showOptions.threshold).every(item => item == this.item)
-            }[this.showOptions.type]();
-
-            if (shouldShow) return this.item.sequence;
-            return '';
-        }
-    },
     methods: {
         initialize() {
             if (this.toTrain.length) {
                 this.setNextSequenceToTrain();
             } else {
-                this.item = null;
+                this.shortcut = null;
             }
         },
         secondsPassed() {
@@ -63,19 +46,26 @@ export default {
         },
         setNextSequenceToTrain() {
             this.startTime = Date.now();
-            this.item = this.toTrain.filter(item => !this.completed.includes(item))[0];
+            this.shortcut = this.toTrain.filter(item => !this.completed.includes(item))[0];
         },
         alertSuccess() {
-            this.completed.push(this.item);
+            this.completed.push(this.shortcut);
             this.setNextSequenceToTrain();
             this.message = 'correct!';
         },
         alertFailure(msg) {
-            this.errors.push(this.item);
-            this.animateClass = 'shake';
-            setTimeout(() => this.animateClass = '', 350);
+            console.log('alerting failure', msg);
+            this.missedQuestion = true;
+            this.errors.push(this.shortcut);
             this.message = msg;
+            this.$nextTick(() => this.$refs.moveOnInput.focus());
         },
+        moveOn() {
+            this.missedQuestion = false;
+            this.message = '';
+            this.setNextSequenceToTrain();
+            this.$refs.keyInput.focus();
+        }
     }
 }
 </script>
@@ -85,27 +75,33 @@ export default {
 <template>
 <div class="flex flex-col justify-start items-center m-auto max-w-2xl">
     <ProgressBar :progress="completed.length / toTrain.length" />
-    <div class="h-1 w-full bg-green-200">
-        <div data-cy="progress-bar" class="h-1 bg-green-400" :style="{width: completed.length / toTrain.length * 100 + '%'}"></div>
-    </div>
     <div class="flex justify-between w-full">
         <div>{{ completed.length }}/{{ toTrain.length }}</div>
-        <div>{{ errors.length }} errors</div>
     </div>
 
-    <div v-if="item">
-        <h2 data-cy="action-label" class="animated" :class="animateClass">{{ item.action }}</h2>
-        <KeyInput :expected="item.sequence"
-            :prompt="prompt"
+    <div v-if="shortcut" class="flex flex-col justify-start items-center">
+        <h2 data-cy="action-label">{{ shortcut.prompt }}</h2>
+        <KeyInput
+            ref="keyInput"
+            :expected="shortcut.action"
             @success="alertSuccess"
             @failure="alertFailure"
-        />
-        <ShowSentence :options="showOptions" />
+         />
 
-        <span>{{ message }}</span>
+        <div v-if="!missedQuestion">{{ message }}</div>
+        <div v-if="missedQuestion" @keydown="moveOn">
+            <CenterAlign valueStyle="font-bold" :items="[
+                'You pressed:', message,
+                'Correct answer:', shortcut.action
+            ]" />
+            <i class="text-gray-700">Press any key to continue</i>
+            <br />
+            <input class="opacity-0" ref="moveOnInput" data-cy="move-on-input" />
+        </div>
     </div>
+
 </div>
-</template>
+</div></template>
 
 <style lang="postcss">
 @tailwind base;

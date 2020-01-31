@@ -24,12 +24,12 @@ describe('KeyTrainer', () => {
         ['ctrl+shift+a', 'ctrl+a', '{ctrl}a'],
         ['ctrl+a b', 'ctrl+a c', '{ctrl}a', 'c'],
         ['ctrl+a b', 'ctrl+a ctrl+b', '{ctrl}ab'],
-        ['ctrl+a ctrl+b', 'ctrl+b ctrl+a', '{ctrl}ba'],
+        ['ctrl+a ctrl+b', 'ctrl+b', '{ctrl}ba'],
     ]
 
     successCases.forEach(([expected, ...actual]) => {
         it('handles success for ' + expected, () => {
-            Cypress.vue.item.sequence = expected;
+            Cypress.vue.shortcut.action = expected;
             actual.forEach(sequence => {
                 cy.get('[data-cy=key-input]').type(sequence)
             });
@@ -39,11 +39,12 @@ describe('KeyTrainer', () => {
 
     failureCases.forEach(([expected, failureMessage, ...actual]) => {
         it('handles failure for ' + expected + ' when it receives ' + actual.join(), () => {
-            Cypress.vue.item.sequence = expected;
+            Cypress.vue.shortcut.action = expected;
             actual.forEach(sequence => {
                 cy.get('[data-cy=key-input]').type(sequence)
             })
             cy.contains(failureMessage)
+            cy.get('[data-cy=move-on-input]').type('{enter}')
         })
     })
 })
