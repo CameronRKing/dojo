@@ -4,6 +4,10 @@ import KeyInput from './KeyInput';
 import ShowSentence from './ShowSentence';
 import ProgressBar from './ProgressBar';
 
+function randItem(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export default {
     components: {
         KeyInput,
@@ -22,7 +26,8 @@ export default {
             completed: [],
             errors: [],
             startTime: null,
-            missedQuestion: false,
+            justMissed: false,
+            currRound: 1,
         };
     },
     created() {
@@ -36,7 +41,7 @@ export default {
     methods: {
         initialize() {
             if (this.toTrain.length) {
-                this.setNextSequenceToTrain();
+                this.setNextShortcutToTrain();
             } else {
                 this.shortcut = null;
             }
@@ -44,26 +49,37 @@ export default {
         secondsPassed() {
             return (Date.now() - this.startTime) / 1000;
         },
-        setNextSequenceToTrain() {
+        setNextShortcutToTrain() {
             this.startTime = Date.now();
-            this.shortcut = this.toTrain.filter(item => !this.completed.includes(item))[0];
+
+            if (this.completed.length == this.toTrain.length) {
+                this.completed.splice(0, this.completed.length);
+                this.currRound++;
+            }
+            
+            const possibleChoices = this.toTrain.filter(item => !this.completed.includes(item));
+            const newItem = randItem(possibleChoices);
+
+            if (this.shortcut == newItem) {
+                this.$refs.keyInput.reset();
+            } else {
+                this.shortcut = newItem;
+            }
         },
         alertSuccess() {
             this.completed.push(this.shortcut);
-            this.setNextSequenceToTrain();
+            this.setNextShortcutToTrain();
             this.message = 'correct!';
         },
         alertFailure(msg) {
-            console.log('alerting failure', msg);
-            this.missedQuestion = true;
-            this.errors.push(this.shortcut);
+            this.justMissed = this.shortcut;
             this.message = msg;
             this.$nextTick(() => this.$refs.moveOnInput.focus());
         },
         moveOn() {
-            this.missedQuestion = false;
             this.message = '';
-            this.setNextSequenceToTrain();
+            this.setNextShortcutToTrain();
+            this.justMissed = null;
             this.$refs.keyInput.focus();
         }
     }
@@ -77,9 +93,14 @@ export default {
     <ProgressBar :progress="completed.length / toTrain.length" />
     <div class="flex justify-between w-full">
         <div>{{ completed.length }}/{{ toTrain.length }}</div>
+        <div>Round: {{ currRound }}</div>
     </div>
 
-    <div v-if="shortcut" class="flex flex-col justify-start items-center">
+    <div
+        v-if="shortcut"
+        class="flex flex-col justify-start items-center"
+        data-cy="trainer"
+    >
         <h2 data-cy="action-label">{{ shortcut.prompt }}</h2>
         <KeyInput
             ref="keyInput"
@@ -88,20 +109,30 @@ export default {
             @failure="alertFailure"
          />
 
-        <div v-if="!missedQuestion">{{ message }}</div>
-        <div v-if="missedQuestion" @keydown="moveOn">
-            <CenterAlign valueStyle="font-bold" :items="[
+        <div v-if="!justMissed">{{ message }}</div>
+        <div
+            v-if="justMissed"
+            @keydown="moveOn"
+        >
+            <CenterAlign
+                valueStyle="font-bold"
+                :items="[
                 'You pressed:', message,
                 'Correct answer:', shortcut.action
-            ]" />
+            ]"
+             />
             <i class="text-gray-700">Press any key to continue</i>
             <br />
-            <input class="opacity-0" ref="moveOnInput" data-cy="move-on-input" />
+            <input
+                class="opacity-0"
+                ref="moveOnInput"
+                data-cy="move-on-input"
+             />
         </div>
     </div>
 
 </div>
-</div></template>
+</template>
 
 <style lang="postcss">
 @tailwind base;

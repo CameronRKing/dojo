@@ -27,6 +27,9 @@ export default {
     methods: {
         focus() {
             this.$refs.input.focus();
+        },
+        reset() {
+            this.checker.setSequence(this.expected);
         }
     }
 };
