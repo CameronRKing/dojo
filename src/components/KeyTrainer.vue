@@ -1,5 +1,5 @@
 <script>
-import CenterAlign from '@/components/CenterAlign.vue';
+import KeyValue from '@/components/KeyValue.vue';
 import KeyInput from './KeyInput';
 import ShowSentence from './ShowSentence';
 import ProgressBar from './ProgressBar';
@@ -8,12 +8,20 @@ function randItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function leftPad(num, totalWidth) {
+    const str = String(num);
+    if (str.length < totalWidth) {
+        return '0'.repeat(totalWidth - str.length) + str;
+    }
+    return str;
+}
+
 export default {
     components: {
         KeyInput,
         ShowSentence,
         ProgressBar,
-        CenterAlign
+        KeyValue
     },
     data() {
         return {
@@ -24,10 +32,12 @@ export default {
             shortcut: null,
             message: '',
             completed: [],
-            errors: [],
             startTime: null,
             justMissed: false,
             currRound: 1,
+            sessionEnded: false,
+            attempts: 0,
+            misses: 0,
         };
     },
     created() {
@@ -40,6 +50,7 @@ export default {
     },
     methods: {
         initialize() {
+            this.startTime = Date.now();
             if (this.toTrain.length) {
                 this.setNextShortcutToTrain();
             } else {
@@ -50,8 +61,6 @@ export default {
             return (Date.now() - this.startTime) / 1000;
         },
         setNextShortcutToTrain() {
-            this.startTime = Date.now();
-
             if (this.completed.length == this.toTrain.length) {
                 this.completed.splice(0, this.completed.length);
                 this.currRound++;
@@ -67,11 +76,14 @@ export default {
             }
         },
         alertSuccess() {
+            this.attempts++;
             this.completed.push(this.shortcut);
             this.setNextShortcutToTrain();
             this.message = 'correct!';
         },
         alertFailure(msg) {
+            this.attempts++;
+            this.misses++;
             this.justMissed = this.shortcut;
             this.message = msg;
             this.$nextTick(() => this.$refs.moveOnInput.focus());
@@ -81,9 +93,25 @@ export default {
             this.setNextShortcutToTrain();
             this.justMissed = null;
             this.$refs.keyInput.focus();
+        },
+        endSession() {
+            this.sessionEnded = true;
+        },
+        leaveSession() {
+
+        }
+    },
+    computed: {
+        accuracy() {
+            return Math.floor((this.attempts - this.misses) / this.attempts * 100) + '%';
+        },
+        timePassed() {
+            const totalSeconds = Math.floor(this.secondsPassed());
+            const minutes = Math.floor(totalSeconds / 60);
+            return `${minutes}:${leftPad(totalSeconds % 60, 2)}`;
         }
     }
-}
+};
 </script>
 
 
@@ -97,7 +125,7 @@ export default {
     </div>
 
     <div
-        v-if="shortcut"
+        v-if="shortcut && !sessionEnded"
         class="flex flex-col justify-start items-center"
         data-cy="trainer"
     >
@@ -114,8 +142,9 @@ export default {
             v-if="justMissed"
             @keydown="moveOn"
         >
-            <CenterAlign
-                valueStyle="font-bold"
+            <KeyValue
+                align="center"
+                value-style="font-bold"
                 :items="[
                 'You pressed:', message,
                 'Correct answer:', shortcut.action
@@ -129,6 +158,21 @@ export default {
                 data-cy="move-on-input"
              />
         </div>
+        <button @click="endSession">End session</button>
+    </div>
+
+    <div v-if="sessionEnded" class="flex flex-col">
+        <KeyValue
+            align="between"
+            value-style="font-bold"
+            :items="[
+            'Shortcuts trained', toTrain.length,
+            'Rounds', currRound - 1,
+            'Total attempts', attempts,
+            'Accuracy', accuracy,
+            'Length', timePassed
+        ]" />
+        <button @click="leaveSession" class="border mt-2">Return to dojo</button>
     </div>
 
 </div>
@@ -140,57 +184,4 @@ export default {
 @tailwind components;
 
 @tailwind utilities;
-
-/* from animate.css, with modifications */
-.animated {
-    -webkit-animation-duration: 0.3s;
-    animation-duration: 0.3s;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-}
-
-@-webkit-keyframes shake {
-    from,
-    to {
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-    }
-
-    20%,
-    60% {
-        -webkit-transform: translate3d(-4px, 0, 0);
-        transform: translate3d(-4px, 0, 0);
-    }
-
-    40%,
-    80% {
-        -webkit-transform: translate3d(4px, 0, 0);
-        transform: translate3d(4px, 0, 0);
-    }
-}
-
-@keyframes shake {
-    from,
-    to {
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-    }
-
-    20%,
-    60% {
-        -webkit-transform: translate3d(-4px, 0, 0);
-        transform: translate3d(-4px, 0, 0);
-    }
-
-    40%,
-    80% {
-        -webkit-transform: translate3d(4px, 0, 0);
-        transform: translate3d(4px, 0, 0);
-    }
-}
-
-.shake {
-    -webkit-animation-name: shake;
-    animation-name: shake;
-}
 </style>
