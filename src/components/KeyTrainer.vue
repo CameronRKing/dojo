@@ -17,6 +17,7 @@ function leftPad(num, totalWidth) {
 }
 
 export default {
+    props: ['toTrain'],
     components: {
         KeyInput,
         ShowSentence,
@@ -25,10 +26,6 @@ export default {
     },
     data() {
         return {
-            toTrain: [
-                { prompt: 'Underline text', action: 'ctrl+u' },
-                { prompt: 'Bold text', action: 'ctrl+b' },
-            ],
             shortcut: null,
             message: '',
             completed: [],
@@ -37,7 +34,7 @@ export default {
             currRound: 1,
             sessionEnded: false,
             attempts: 0,
-            misses: 0,
+            misses: 0
         };
     },
     created() {
@@ -98,7 +95,7 @@ export default {
             this.sessionEnded = true;
         },
         leaveSession() {
-
+            this.$emit('done')
         }
     },
     computed: {
@@ -110,7 +107,7 @@ export default {
             const minutes = Math.floor(totalSeconds / 60);
             return `${minutes}:${leftPad(totalSeconds % 60, 2)}`;
         }
-    }
+    },
 };
 </script>
 
@@ -161,7 +158,10 @@ export default {
         <button @click="endSession">End session</button>
     </div>
 
-    <div v-if="sessionEnded" class="flex flex-col">
+    <div
+        v-if="sessionEnded"
+        class="flex flex-col"
+    >
         <KeyValue
             align="between"
             value-style="font-bold"
@@ -171,8 +171,12 @@ export default {
             'Total attempts', attempts,
             'Accuracy', accuracy,
             'Length', timePassed
-        ]" />
-        <button @click="leaveSession" class="border mt-2">Return to dojo</button>
+        ]"
+         />
+        <button
+            @click="leaveSession"
+            class="border mt-2"
+        >Return to dojo</button>
     </div>
 
 </div>

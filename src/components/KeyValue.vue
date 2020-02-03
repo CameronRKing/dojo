@@ -1,8 +1,11 @@
 <script>
+function containsPairedArrays(arr) {
+    return arr.every(item => Array.isArray(item) && item.length == 2);
+}
 export default {
     props: {
         items: {
-            validator: (items) => items.length % 2 == 0
+            validator: (items) => containsPairedArrays(items) || items.length % 2 == 0
         },
         keyStyle: {
             default: ''
@@ -16,6 +19,8 @@ export default {
     },
     computed: {
         pairs() {
+            if (containsPairedArrays(this.items)) return this.items;
+            
             const toReturn = [];
             for (let i = 0; i < this.items.length; i += 2) {
                 toReturn.push(this.items.slice(i, i + 2))

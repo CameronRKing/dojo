@@ -89,7 +89,7 @@ describe('SetPractice', () => {
         }
     })
 
-    it.only('shows a review when the user ends the session', () => {
+    it('shows a review when the user ends the session', () => {
         for (let i = 0; i < fullSet.length * 2; i++) {
             typeCurrentAction()
         }

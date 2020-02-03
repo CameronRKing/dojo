@@ -1,0 +1,82 @@
+<script>
+import KeyValue from '@/components/KeyValue.vue';
+import KeyTrainer from '@/components/KeyTrainer.vue';
+
+export default {
+    data() {
+        return {
+            shortcuts: [],
+            toTrain: null,
+            cheatsheet: [],
+        };
+    },
+    computed: {
+        byTag() {
+            return this.shortcuts.reduce((acc, shortcut) => {
+                shortcut.tags.forEach(tag => {
+                    if (!acc[tag]) acc[tag] = [];
+                    acc[tag].push(shortcut);
+                });
+                return acc;
+            }, {});
+        }
+    },
+    components: {
+        KeyTrainer,
+        KeyValue
+    },
+    methods: {
+        train(tag, shortcuts) {
+            this.toTrain = shortcuts;
+        },
+        showCheatsheet(shortcuts) {
+            this.cheatsheet = shortcuts;
+        }
+    }
+};
+</script>
+
+<template>
+<div>
+    <div
+        v-if="!toTrain"
+        class="flex flex-col items-center justify-center"
+    >
+        <button @click="showCheatsheet(shortcuts)">Master cheatsheet</button>
+        <div
+            v-for="(shortcuts, tag) in byTag"
+            :key="tag"
+            class="flex flex-col items-start justify-start mt-4"
+        >
+            <div class="capitalize text-xl">{{ tag }}</div>
+            <div class="uppercase text-sm tracking-wider font-bold">{{ shortcuts.length }} shortcuts</div>
+            <button @click="showCheatsheet(shortcuts)">Cheatsheet</button>
+            <button @click="train(tag, shortcuts)">Train</button>
+        </div>
+    </div>
+
+    <!-- should probably turn this into a modal at some point -->
+    <div v-if="cheatsheet">
+        <KeyValue
+            align="left"
+            value-style="font-bold action"
+            :items="cheatsheet.map(({ prompt, action }) => [prompt, action])"
+        />
+        <button @click="cheatsheet = null">Close</button>
+    </div>
+    
+    <KeyTrainer
+        v-if="toTrain"
+        :to-train="toTrain"
+        @done="toTrain = null"
+     />
+</div>
+</template>
+
+<style lang="postcss">
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+</style>
