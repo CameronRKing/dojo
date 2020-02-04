@@ -1,3 +1,5 @@
+// see https://www.supermemo.com/en/archives1990-2015/english/ol/sm2
+// the only modification is calculating q from the response time instead of user self-rating
 export function calcQ(th, time) {
     if (time <= th * 1.2) return 5;
     if (time <= th * 2) return 4;
