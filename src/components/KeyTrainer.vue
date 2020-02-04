@@ -40,6 +40,9 @@ export default {
     created() {
         this.initialize();
     },
+    mounted() {
+        if (this.$refs.keyInput) this.$refs.keyInput.focus();
+    },
     watch: {
         toTrain(val, oldVal) {
             this.initialize()
