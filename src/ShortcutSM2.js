@@ -1,5 +1,10 @@
 // see https://www.supermemo.com/en/archives1990-2015/english/ol/sm2
-// the only modification is calculating q from the response time instead of user self-rating
+// the only modification is calculating q from an adaptive response time instead of user self-rating
+function setAccuracy(num, accuracy) {
+    const multiplier = 1 / accuracy;
+    return Math.floor(num * multiplier) / multiplier;
+}
+
 export function calcQ(th, time) {
     if (time <= th * 1.2) return 5;
     if (time <= th * 2) return 4;
@@ -7,8 +12,7 @@ export function calcQ(th, time) {
 }
 
 export function calcEF(oldEf, q) {
-    const iq = 5 - q; // inverse q; a term that appears twice
-    const ef = oldEf + (0.1 - iq * (0.08 + iq * 0.02));
+    const ef = oldEf - 0.8 + 0.28 * q - 0.02 * q * q;
     if (ef > 2.5) return 2.5;
     if (ef < 1.3) return 1.3;
     return ef;
@@ -20,8 +24,7 @@ export function calcInterval(oldInterval, ef) {
 }
 
 export function calcTH(oldTh, time) {
-    // the * 100, floo, / 100 is to set the accuracy to 0.001
-    return Math.floor((oldTh * 0.8 + time * 0.2) * 100) / 100;
+    return setAccuracy(oldTh * 0.8 + time * 0.2, 0.001);
 }
 
 export function calcMemento(oldMemento, time) {
