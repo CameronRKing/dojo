@@ -1,15 +1,15 @@
 <script>
+import DojoTrain from '@/components/dojo/Train';
 import ShortcutEditor from '@/components/ShortcutEditor.vue';
 import KeyValue from './KeyValue.vue';
-import KeyTrainer from './KeyTrainer.vue';
 import Mousetrap from 'mousetrap';
 import 'mousetrap/plugins/record/mousetrap-record';
 
 export default {
     components: {
-        KeyTrainer,
         KeyValue,
-        ShortcutEditor
+        ShortcutEditor,
+        DojoTrain
     },
     data() {
         return {
@@ -71,13 +71,17 @@ export default {
         <button @click="cheatsheet = null">Close</button>
     </div>
     
-    <KeyTrainer
+    <DojoTrain
         v-if="toTrain"
         :to-train="toTrain"
         @done="toTrain = null"
      />
 
-    <ShortcutEditor v-if="editing" :shortcuts="shortcuts" @done="editing = false" />
+    <ShortcutEditor
+        v-if="editing"
+        :shortcuts="shortcuts"
+        @done="editing = false"
+     />
 </div>
 </template>
 

@@ -1,8 +1,12 @@
-import KeyTrainer from '../../../src/components/KeyTrainer.vue'
+import DojoBase from '../../../src/components/dojo/Base.vue'
+import TrainingShortcutProvider from '../../../src/services/TrainShortcutProvider'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('KeyTrainer', () => {
-    beforeEach(mountVue(KeyTrainer))
+    beforeEach(() => {
+        mountVue(DojoBase)();
+        Cypress.vue.shortcutProvider = new TrainingShortcutProvider([{ prompt: 'Test', action: 'a' }]);
+    })
 
     const successCases = [
         ['a', 'a'],

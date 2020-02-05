@@ -1,74 +1,42 @@
 <script>
+import ProgressBar from '@/components/ProgressBar';
+import KeyInput from '@/components/KeyInput';
 import KeyValue from '@/components/KeyValue.vue';
-import KeyInput from './KeyInput';
-import ShowSentence from './ShowSentence';
-import ProgressBar from './ProgressBar';
-
-function randItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function leftPad(num, totalWidth) {
-    const str = String(num);
-    if (str.length < totalWidth) {
-        return '0'.repeat(totalWidth - str.length) + str;
-    }
-    return str;
-}
 
 export default {
-    props: ['toTrain'],
     components: {
-        KeyInput,
-        ShowSentence,
         ProgressBar,
+        KeyInput,
         KeyValue
     },
+    props: ['shortcutProvider'],
     data() {
         return {
             shortcut: null,
             message: '',
-            completed: [],
             startTime: null,
             justMissed: false,
-            currRound: 1,
             sessionEnded: false,
-            attempts: 0,
-            misses: 0
         };
     },
-    created() {
-        this.initialize();
+    watch: {
+        shortcutProvider(val, oldVal) {
+            this.initialize();
+        },
     },
     mounted() {
         if (this.$refs.keyInput) this.$refs.keyInput.focus();
     },
-    watch: {
-        toTrain(val, oldVal) {
-            this.initialize()
-        }
-    },
     methods: {
         initialize() {
-            this.startTime = Date.now();
-            if (this.toTrain.length) {
+            if (this.shortcutProvider) {
                 this.setNextShortcutToTrain();
             } else {
                 this.shortcut = null;
             }
         },
-        secondsPassed() {
-            return (Date.now() - this.startTime) / 1000;
-        },
         setNextShortcutToTrain() {
-            if (this.completed.length == this.toTrain.length) {
-                this.completed.splice(0, this.completed.length);
-                this.currRound++;
-            }
-            
-            const possibleChoices = this.toTrain.filter(item => !this.completed.includes(item));
-            const newItem = randItem(possibleChoices);
-
+            const newItem = this.shortcutProvider.getNext();
             if (this.shortcut == newItem) {
                 this.$refs.keyInput.reset();
             } else {
@@ -76,14 +44,12 @@ export default {
             }
         },
         alertSuccess() {
-            this.attempts++;
-            this.completed.push(this.shortcut);
+            this.shortcutProvider.success(this.shortcut);
             this.setNextShortcutToTrain();
             this.message = 'correct!';
         },
         alertFailure(msg) {
-            this.attempts++;
-            this.misses++;
+            this.shortcutProvider.failure(this.shortcut);
             this.justMissed = this.shortcut;
             this.message = msg;
             this.$nextTick(() => this.$refs.moveOnInput.focus());
@@ -101,15 +67,8 @@ export default {
             this.$emit('done')
         }
     },
-    computed: {
-        accuracy() {
-            return Math.floor((this.attempts - this.misses) / this.attempts * 100) + '%';
-        },
-        timePassed() {
-            const totalSeconds = Math.floor(this.secondsPassed());
-            const minutes = Math.floor(totalSeconds / 60);
-            return `${minutes}:${leftPad(totalSeconds % 60, 2)}`;
-        }
+    created() {
+        this.initialize();
     },
 };
 </script>
@@ -118,11 +77,8 @@ export default {
 
 <template>
 <div class="flex flex-col justify-start items-center m-auto max-w-2xl">
-    <ProgressBar :progress="completed.length / toTrain.length" />
-    <div class="flex justify-between w-full">
-        <div>{{ completed.length }}/{{ toTrain.length }}</div>
-        <div>Round: {{ currRound }}</div>
-    </div>
+    <ProgressBar :progress="shortcutProvider.progress" />
+    <slot name="progress"></slot>
 
     <div
         v-if="shortcut && !sessionEnded"
@@ -165,17 +121,8 @@ export default {
         v-if="sessionEnded"
         class="flex flex-col"
     >
-        <KeyValue
-            align="between"
-            value-style="font-bold"
-            :items="[
-            'Shortcuts trained', toTrain.length,
-            'Rounds', currRound - 1,
-            'Total attempts', attempts,
-            'Accuracy', accuracy,
-            'Length', timePassed
-        ]"
-         />
+        <slot name="session-recap"></slot>
+
         <button
             @click="leaveSession"
             class="border mt-2"

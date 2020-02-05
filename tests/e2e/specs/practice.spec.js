@@ -1,4 +1,4 @@
-import KeyTrainer from '../../../src/components/KeyTrainer.vue'
+import DojoTrain from '../../../src/components/dojo/Train.vue'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('SetPractice', () => {
@@ -10,20 +10,25 @@ describe('SetPractice', () => {
     ];
     
     beforeEach(() => {
-        mountVue(KeyTrainer)()
+        mountVue(DojoTrain)()
         Cypress.vue.toTrain = fullSet.slice();
     })
 
     function typeCurrentAction() {
-        cy.get('[data-cy=key-input]').within($el => cy.wrap($el).type(Cypress.vue.shortcut.action))
+        cy.get('[data-cy=key-input]').within($el => cy.wrap($el).type(getShortcut().action))
+    }
+
+    function getShortcut() {
+        return Cypress.vue.$children[0].shortcut;
     }
 
     it('on correct answer, adds to the progress bar and moves to the next question', () => {
         cy.contains('0/4')
-        cy.get('[data-cy=action-label]').within($el => cy.contains(Cypress.vue.shortcut.prompt))
+        cy.contains('End session')
+        cy.get('[data-cy=action-label]').within($el => cy.contains(getShortcut().prompt))
         typeCurrentAction()
         cy.contains('1/4')
-        cy.get('[data-cy=action-label]').within($el => cy.contains(Cypress.vue.shortcut.prompt))
+        cy.get('[data-cy=action-label]').within($el => cy.contains(getShortcut().prompt))
     })
 
     it('on a wrong answer, shows the right answer and prompts the user to press any key to continue', () => {
@@ -32,7 +37,7 @@ describe('SetPractice', () => {
         cy.contains('You pressed:')
         cy.contains('x')
         cy.contains('Correct answer:')
-        cy.contains(Cypress.vue.shortcut.action)
+        cy.contains(getShortcut().action)
         cy.contains('Press any key to continue')
     })
 
@@ -42,7 +47,7 @@ describe('SetPractice', () => {
 
         for (let i = 0; i < fullSet.length; i++) {
             cy.get('[data-cy=key-input]').within($input => {
-                const currentItem = notYetPassed.find(({ prompt }) => prompt == Cypress.vue.shortcut.prompt);
+                const currentItem = notYetPassed.find(({ prompt }) => prompt == getShortcut().prompt);
                 expect(currentItem).to.be.ok;
             
                 cy.wrap($input).type(currentItem.action)
@@ -60,7 +65,7 @@ describe('SetPractice', () => {
 
         for (let i = 0; i < fullSet.length + 1; i++) {
             cy.get('[data-cy=trainer]').within($el => {
-                if (Cypress.vue.shortcut.prompt == willMiss) {
+                if (getShortcut().prompt == willMiss) {
                     if (!seenBefore) {
                         cy.get('[data-cy=key-input]').type('x')
                         cy.contains('Correct answer:')
