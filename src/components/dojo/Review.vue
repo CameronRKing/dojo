@@ -1,7 +1,7 @@
 <script>
 import KeyValue from '@/components/KeyValue.vue';
 import DojoBase from './Base';
-import TrainShortcutProvider from '@/services/TrainShortcutProvider';
+import ReviewShortcutProvider from '@/services/ReviewShortcutProvider';
 
 export default {
     components: {
@@ -18,7 +18,7 @@ export default {
         toTrain: {
             handler(newVal, oldVal) {
                 if (!newVal) return;
-                this.shortcutProvider = new TrainShortcutProvider(newVal);
+                this.shortcutProvider = new ReviewShortcutProvider(newVal);
             },
             immediate: true
         }
@@ -34,22 +34,12 @@ export default {
     :shortcut-provider="shortcutProvider"
     @done="$emit('done')"
 >
-    <template slot="progress">
-        <div class="flex justify-between w-full">
-            <div>{{ shortcutProvider.completed.length }}/{{ toTrain.length }}</div>
-            <div>Round: {{ shortcutProvider.currRound }}</div>
-        </div>
-    </template>
-
     <template slot="session-recap">
         <KeyValue
             align="between"
             value-style="font-bold"
             :items="[
-                'Shortcuts trained', toTrain.length,
-                'Rounds', shortcutProvider.currRound - 1,
-                'Total attempts', shortcutProvider.attempts,
-                'Accuracy', shortcutProvider.accuracy(),
+                'Shortcuts reviewed', toTrain.length,
                 'Time taken', shortcutProvider.timePassed()
             ]"
         />
