@@ -23,6 +23,10 @@ export default class ShortcutProvider {
         throw new Exception('not implemented');
     }
 
+    done() {
+        throw new Exception('not implemented');
+    }
+
     timePassed() {
         const totalSeconds = Math.floor(this.secondsPassed());
         const minutes = Math.floor(totalSeconds / 60);

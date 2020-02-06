@@ -18,4 +18,14 @@ describe('Learning new shortcuts', () => {
         cy.contains('Time taken')
         cy.contains('0:0')
     })
+
+    it('initializes mementos when the session is over', () => {
+        cy.get('[data-cy=key-input]').type('a')
+        cy.get('[data-cy=key-input]').type('a')
+        cy.get('[data-cy=key-input]').type('a')
+        cy.get('[data-cy=key-input]').type('a')
+        cy.contains('Return to dojo').click().then(() => {
+            expect(Cypress.vue.toTrain[0].memento).to.be.ok;
+        });
+    })
 })

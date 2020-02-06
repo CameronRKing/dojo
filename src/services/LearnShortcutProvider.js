@@ -1,5 +1,6 @@
 import ShortcutProvider from './ShortcutProvider';
 import { mapWithKeys, remove, next, prev, pairs, assocIn } from '@/utils';
+import SM2Memento from '@/SM2Memento';
 
 /**
  * This algorithm is a naive implementation of the first few stages of Pimsleur's graudated interval recall
@@ -29,6 +30,8 @@ export default class LearnShortcutProvider extends ShortcutProvider {
         this.bucketList = Object.keys(this.buckets);
         // assuming no two shortcuts can have the same prompt, which seems reasonable
         this.lastTouchedTimes = mapWithKeys(shortcuts, ({ prompt }) => [prompt, 0]);
+        this.responseTimes = mapWithKeys(shortcuts, ({ prompt }) => [prompt, []]);
+        this.itemStart = null;
     }
 
     hasMore() {
@@ -36,15 +39,26 @@ export default class LearnShortcutProvider extends ShortcutProvider {
     }
 
     getNext() {
+        this.itemStart = Date.now();
         return this.orderByTimePastDue()[0];
     }
 
     success(shortcut) {
+        const timePassed = Date.now() - this.itemStart;
+        this.addResponseTime(shortcut, timePassed);
         this.move(shortcut, 'Next');
     }
 
     failure(shortcut) {
         this.move(shortcut, 'Prev');
+    }
+
+    addResponseTime(shortcut, timePassed) {
+        this.responseTimes[shortcut.prompt].push(timePassed);
+    }
+
+    getResponseTimes(shortcut) {
+        return this.responseTimes[shortcut.prompt];
     }
 
     orderByTimePastDue() {
@@ -101,5 +115,14 @@ export default class LearnShortcutProvider extends ShortcutProvider {
         return this.bucketList.reduce((acc, bucketName) => {
             return acc + this.buckets[bucketName].length * passes++;
         }, 0) / (this.shortcuts.length * (this.bucketList.length - 1));
+    }
+
+    done() {
+        this.shortcuts.forEach(shortcut => {
+            // this should really not be used directly,
+            // but until there's a need for plugging in other algorithms,
+            // the dependency injection is just more trouble than its worth
+            shortcut.memento = SM2Memento.initialize(this.getResponseTimes(shortcut));
+        })
     }
 }

@@ -39,6 +39,8 @@ export default class TrainShortcutProvider extends ShortcutProvider {
         this.misses++;
     }
 
+    done() {}
+
     accuracy() {
         return Math.floor((this.attempts - this.misses) / this.attempts * 100) + '%';
     }

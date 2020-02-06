@@ -69,6 +69,7 @@ export default {
             this.sessionEnded = true;
         },
         leaveSession() {
+            this.shortcutProvider.done();
             this.$emit('done')
         }
     },

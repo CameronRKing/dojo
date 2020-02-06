@@ -1,3 +1,7 @@
+export function avg(arr) {
+    return arr.reduce((acc, val) => acc + val, 0) / arr.length;
+}
+
 export function mapWithKeys(arr, cb) {
     if (!cb) cb = (args) => args;
     return arr.reduce((acc, value) => {

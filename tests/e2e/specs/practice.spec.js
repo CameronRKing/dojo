@@ -109,7 +109,7 @@ describe('SetPractice', () => {
         cy.contains('8')
         cy.contains('Accuracy')
         cy.contains('100%')
-        cy.contains('Length')
+        cy.contains('Time taken')
         // no way to know what the length will be precisely, but we know it'll be in the seconds
         cy.contains('0:0')
         cy.contains('Return to dojo')

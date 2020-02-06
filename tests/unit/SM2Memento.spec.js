@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import * as ShortcutSM2 from '@/ShortcutSM2';
+import * as ShortcutSM2 from '@/SM2Memento';
 
 describe('ShortcutSM2', () => {
 	it('calculates a quality rating given a time and a threshold', () => {
@@ -43,15 +43,4 @@ describe('ShortcutSM2', () => {
 		th = ShortcutSM2.calcTH(0.2, 0.15)
 		expect(th).to.equal(0.19)
 	})
-
-	it('calculates a new memento given the old memento and the last response time', () => {
-		let memento;
-		memento = ShortcutSM2.calcMemento({ i: 6, ef: 1.6, th: 0.2 }, 0.3);
-		expect(memento).to.deep.equal({
-			i: 10,
-			ef: 1.6,
-			th: 0.22
-		});
-	})
-	
 })

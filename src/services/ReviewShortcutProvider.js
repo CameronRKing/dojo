@@ -2,7 +2,6 @@ import ShortcutProvider from './ShortcutProvider';
 import { randItem, remove } from '@/utils';
 // memento-related logic should be dependency-injected, not imported
 // but right now I don't know where the source of the injection will be, so I'm ignoring it
-import { calcQ } from '@/ShortcutSM2';
 
 function removeIfContains(arr, item) {
     if (arr.includes(item)) remove(arr, item);
@@ -32,24 +31,31 @@ export default class ReviewShortcutProvider extends ShortcutProvider {
     }
 
     success(shortcut) {
-        const timePassed = Date.now() - this.itemStart;
-        const qualityRating = calcQ(shortcut.memento.th, timePassed);
-
         removeIfContains(this.unreviewed, shortcut);
-        if (qualityRating < 4) {
+        const timePassed = Date.now() - this.itemStart;
+        
+        if (!shortcut.memento.repMeetsStandard(timePassed)) {
             pushIfDoesntContain(this.belowStandard, shortcut);
         } else {
             removeIfContains(this.belowStandard, shortcut);
             this.completed.push(shortcut);
         }
+
+        // must update after previous logic, since the updating may affect whether the standard was met
+        shortcut.memento.updateAfterPass(timePassed);
     }
 
     failure(shortcut) {
+        shortcut.memento.updateAfterFail();
         removeIfContains(this.unreviewed, shortcut);
         pushIfDoesntContain(this.belowStandard, shortcut);
     }
 
     get progress() {
         return this.completed.length / this.shortcuts.length;
+    }
+
+    done() {
+        this.shortcuts.forEach(shortcut => shortcut.memento.updateAfterSession());
     }
 }
