@@ -36,6 +36,11 @@ export default {
             }
         },
         setNextShortcutToTrain() {
+            if (!this.shortcutProvider.hasMore()) {
+                this.endSession();
+                return;
+            }
+
             const newItem = this.shortcutProvider.getNext();
             if (this.shortcut == newItem) {
                 this.$refs.keyInput.reset();

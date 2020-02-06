@@ -1,5 +1,5 @@
 import ShortcutProvider from './ShortcutProvider';
-import { randItem, leftPad } from '@/utils';
+import { randItem } from '@/utils';
 
 /**
  * When a shortcut is passed, it is marked as 'completed'
@@ -8,10 +8,7 @@ import { randItem, leftPad } from '@/utils';
  */
 export default class TrainShortcutProvider extends ShortcutProvider {
     constructor(shortcuts) {
-        super();
-        // assuming the object is created immediately before it is used
-        this.startTime = Date.now();
-        this.shortcuts = shortcuts;
+        super(shortcuts);
         this.completed = [];
         this.currRound = 1;
         this.misses = 0;
@@ -44,15 +41,5 @@ export default class TrainShortcutProvider extends ShortcutProvider {
 
     accuracy() {
         return Math.floor((this.attempts - this.misses) / this.attempts * 100) + '%';
-    }
-
-    secondsPassed() {
-        return (Date.now() - this.startTime) / 1000;
-    }
-
-    timePassed() {
-        const totalSeconds = Math.floor(this.secondsPassed());
-        const minutes = Math.floor(totalSeconds / 60);
-        return `${minutes}:${leftPad(totalSeconds % 60, 2)}`;
     }
 }

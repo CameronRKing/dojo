@@ -18,8 +18,7 @@ import { mapWithKeys, remove, next, prev, pairs, assocIn } from '@/utils';
  */
 export default class LearnShortcutProvider extends ShortcutProvider {
     constructor(shortcuts) {
-        super();
-        this.shortcuts = shortcuts;
+        super(shortcuts);
         this.buckets = {
             0: shortcuts.slice(),
             5: [],
@@ -30,6 +29,10 @@ export default class LearnShortcutProvider extends ShortcutProvider {
         this.bucketList = Object.keys(this.buckets);
         // assuming no two shortcuts can have the same prompt, which seems reasonable
         this.lastTouchedTimes = mapWithKeys(shortcuts, ({ prompt }) => [prompt, 0]);
+    }
+
+    hasMore() {
+        return this.buckets.done.length != this.shortcuts.length;
     }
 
     getNext() {
@@ -89,5 +92,14 @@ export default class LearnShortcutProvider extends ShortcutProvider {
 
     getPrevBucket(bucketName) {
         return this.buckets[prev(this.bucketList, bucketName)];
+    }
+
+    get progress() {
+        // each item must be passed four times (one to learn, three reviews)
+        // position in a bucket indicates how many times the items have been passed
+        let passes = 0;
+        return this.bucketList.reduce((acc, bucketName) => {
+            return acc + this.buckets[bucketName].length * passes++;
+        }, 0) / (this.shortcuts.length * (this.bucketList.length - 1));
     }
 }
