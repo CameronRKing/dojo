@@ -1,5 +1,5 @@
-import DojoBase from '../../../src/components/dojo/Base.vue'
-import TrainingShortcutProvider from '../../../src/services/TrainShortcutProvider'
+import DojoBase from '../../../../src/components/dojo/Base.vue'
+import TrainingShortcutProvider from '../../../../src/services/TrainShortcutProvider'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('KeyTrainer', () => {

@@ -1,5 +1,5 @@
-import DojoReview from '../../../src/components/dojo/Review.vue'
-import SM2Memento from '../../../src/SM2Memento'
+import DojoReview from '../../../../src/components/dojo/Review.vue'
+import SM2Memento from '../../../../src/SM2Memento'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('Reviewing  shortcuts', () => {

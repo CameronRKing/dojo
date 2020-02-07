@@ -1,4 +1,4 @@
-import DojoLearn from '../../../src/components/dojo/Learn.vue'
+import DojoLearn from '../../../../src/components/dojo/Learn.vue'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('Learning new shortcuts', () => {

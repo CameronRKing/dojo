@@ -1,7 +1,7 @@
-import DojoTrain from '../../../src/components/dojo/Train.vue'
+import DojoTrain from '../../../../src/components/dojo/Train.vue'
 import mountVue from 'cypress-vue-unit-test'
 
-describe('SetPractice', () => {
+describe('Training shortcuts', () => {
     const fullSet = [
         { prompt: 'Underline text', action: 'u' },
         { prompt: 'Bold text', action: 'b' },
