@@ -13,6 +13,14 @@ exports.addMessage = functions.https.onCall((data, context) => {
     // the docs say that "auth/user informatinon is automatically added to the request"
     // where will roles live? will I need to look them up, or will they be present here?
     const uid = context.auth.uid;
+
+    // errors have to be thrown a specific way for the client to get the detailed data
+    if (!(typeof text === 'string') || text.length === 0) {
+        // first argument is one of strings found here:
+        // https://firebase.google.com/docs/reference/functions/providers_https_.html#functionserrorcode
+        throw new functions.https.HttpsError('invalid-argument', 'The function must be called with ' +
+            'one arguments "text" containing the message text to add.');
+    }
 });
 
 // client-side
