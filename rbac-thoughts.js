@@ -1,3 +1,33 @@
+// https://firebase.google.com/docs/functions/callable#initialize_the_client_sdk
+// the best way to use cloud functions in this application is through callable functions
+// they receive the auth instance, and client-side they're essentially async functions returned from a string constructor
+// this means that I can put strict rules on the firestore itself
+// and do more detailed permission checking in cloud functions (since I'll get a reliable auth object)
+
+/*
+// server-side
+exports.addMessage = functions.https.onCall((data, context) => {
+    expect(data).to.deep.equal({ text: 'I am the argument' });
+    return { text: 'I am the return value' };
+
+    // the docs say that "auth/user informatinon is automatically added to the request"
+    // where will roles live? will I need to look them up, or will they be present here?
+    const uid = context.auth.uid;
+});
+
+// client-side
+var addMessage = firebase.functions().httpsCallable('addMessage');
+addMessage({ text: 'I am the argument' }).then(function(result) {
+    expect(result.data).to.deep.equal({ text: 'I am the return value' });
+});
+
+
+*/
+
+
+// to simplify conditional logic for public/private dojos,
+// I could create two RBAC instances with different configurations
+// and choose which one to query based on is_public
 import { RBAC } from 'rbac'; // ES5 var RBAC = require('rbac').default;
 const rbac = new RBAC({
     roles: ['owner', 'editor', 'user'],
