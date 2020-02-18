@@ -1,3 +1,9 @@
+// https://firebase.google.com/docs/functions/get-started
+    // cmd: firebase init functions
+// npm install --save firebase
+// remember to grab initialization snippet from the console
+// https://firebaseopensource.com/projects/firebase/firebaseui-web/#using_firebaseui%20for%20authentication
+
 // https://firebase.google.com/docs/functions/callable#initialize_the_client_sdk
 // the best way to use cloud functions in this application is through callable functions
 // they receive the auth instance, and client-side they're essentially async functions returned from a string constructor

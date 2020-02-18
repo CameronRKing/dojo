@@ -1,3 +1,11 @@
+export function range(n) {
+    let ret = [];
+    for (let i = 0; i < n; i++) {
+        ret.push(i);
+    }
+    return ret;
+}
+
 export function avg(arr) {
     return arr.reduce((acc, val) => acc + val, 0) / arr.length;
 }
