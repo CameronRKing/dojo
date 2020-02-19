@@ -1,4 +1,8 @@
-import { mount as vueMount, shallowMount as vueShallowMount } from '@vue/test-utils';
+import {
+    mount as vueMount,
+    shallowMount as vueShallowMount,
+    createWrapper as vueCreateWrapper,
+} from '@vue/test-utils';
 
 function mount(cmp, options) {
     const wrapper = vueMount(cmp, options);
@@ -8,6 +12,12 @@ function mount(cmp, options) {
 
 function shallowMount(cmp, options={}) {
     const wrapper = vueShallowMount(cmp, options);
+    emit(wrapper);
+    return wrapper;
+}
+
+function createWrapper(cmp) {
+    const wrapper = vueCreateWrapper(cmp);
     emit(wrapper);
     return wrapper;
 }
@@ -29,5 +39,6 @@ function onMount(cb) {
 export {
     mount,
     shallowMount,
+    createWrapper,
     onMount,
 }

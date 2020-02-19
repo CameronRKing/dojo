@@ -4,11 +4,12 @@ module.exports = function(config) {
     config.set({
         frameworks: ['mocha'],
         files: [
+            'tests/unit/oak.js',
             'tests/unit/mount-point.js',
             'tests/unit/**/*.spec.js',
         ],
         preprocessors: {
-            'tests/unit/mount-point.js': ['webpack'],
+            'tests/unit/*.js': ['webpack'],
             '**/*.spec.js': ['webpack', 'sourcemap']
         },
         webpack: webpackConfig,
