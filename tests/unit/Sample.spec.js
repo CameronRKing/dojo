@@ -6,6 +6,7 @@ describe('Sample test', () => {
 
     it('works', () => {
         ok.visit('/');
+        expect(ok.containsText('Home')).to.be.ok;
     });
 
     it('really does work', () => {
