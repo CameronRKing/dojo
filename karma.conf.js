@@ -4,11 +4,11 @@ module.exports = function(config) {
     config.set({
         frameworks: ['mocha'],
         files: [
-            'tests/unit/browser.vue',
+            'tests/unit/mount-point.js',
             'tests/unit/**/*.spec.js',
         ],
         preprocessors: {
-            '**/*.vue': ['webpack', 'sourcemap'],
+            'tests/unit/mount-point.js': ['webpack'],
             '**/*.spec.js': ['webpack', 'sourcemap']
         },
         webpack: webpackConfig,

@@ -12,13 +12,18 @@ function shallowMount(cmp, options={}) {
     return wrapper;
 }
 
-const callbacks = [];
+// I tried const callbacks = [],
+// but it wasn't being shared between the tests and onMount clients
+// attaching it to the global scope works, though it's not ideal
+if (!global.__test_utils_callbacks) {
+    global.__test_utils_callbacks = [];
+}
 function emit(cmp) {
-    callbacks.forEach(cb => cb(cmp));
+    global.__test_utils_callbacks.forEach(cb => cb(cmp));
 }
 
 function onMount(cb) {
-    callbacks.push(cb);
+    global.__test_utils_callbacks.push(cb);
 }
 
 export {
