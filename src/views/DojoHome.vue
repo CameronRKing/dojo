@@ -1,7 +1,7 @@
 <script>
 import DojoTrain from '@/components/dojo/Train';
 import ShortcutEditor from '@/components/ShortcutEditor.vue';
-import KeyValue from './KeyValue.vue';
+import KeyValue from '@/components/KeyValue.vue';
 import Mousetrap from 'mousetrap';
 import 'mousetrap/plugins/record/mousetrap-record';
 
@@ -18,6 +18,9 @@ export default {
             cheatsheet: null,
             editing: false,
         };
+    },
+    async mounted() {
+        this.shortcuts = await this.$store.state.dojoRepo.shortcuts(this.$route.params.id);
     },
     computed: {
         byTag() {

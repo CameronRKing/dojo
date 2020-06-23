@@ -12,15 +12,7 @@ describe('Dojo management', () => {
 
     });
 
-    it('a user can fork a public dojo', () => {
-
-    });
-
-    it('a user can fork a private dojo if they are an owner', () => {
-
-    });
-
-    it('a non-owner cannot fork a private dojo', () => {
+    it('a user can fork a dojo', () => {
 
     });
 
@@ -73,14 +65,6 @@ describe('Dojo management', () => {
     });
 
     it('a non-owner cannot manage roles in a dojo', () => {
-
-    });
-
-    it('a dojo owner can toggle the privacy of a dojo', () => {
-
-    });
-
-    it('a non-owner cannot toggle the privacy of a dojo', () => {
 
     });
 

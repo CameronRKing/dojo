@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import DojoList from './views/DojoList.vue'
+import DojoHome from './views/DojoHome.vue'
 
 Vue.use(Router)
 
@@ -17,6 +18,10 @@ export function makeRouter() {
       {
         path: '/dojos',
         component: DojoList
+      },
+      {
+        path: '/dojos/:id',
+        component: DojoHome,
       }
     ]
   })

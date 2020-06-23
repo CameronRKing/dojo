@@ -5,6 +5,11 @@
     },
     "firestore": {
       "port": "5000"
+    },
+    "ui": {
+      "enabled": true,      // Default is `true`
+      "host": "localhost",
+      "port": 4000       // If unspecified, see CLI log for selected port
     }
   },
   "firestore": {

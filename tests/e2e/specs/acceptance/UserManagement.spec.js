@@ -10,12 +10,4 @@ describe('User management', () => {
     it('a user can log out', () => {
         
     });
-
-    it('a user can choose to receive email alerts when items are up for review', () => {
-
-    });
-
-    it('a user can choose not to receive email alerts when items are up for review', () => {
-
-    });
 });

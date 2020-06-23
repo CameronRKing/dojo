@@ -63,23 +63,15 @@ export default class FirebaseDojoRepo {
         return path('dojos').where('is_public', '==', false).get().then(docify);
     }
 
-    async byId(id) {
+    byId(id) {
         return path(`dojos/${id}`).get().then(docify)
+    }
+
+    shortcuts(id) {
+        return path(`dojos/${id}/shortcuts`).get().then(docify)
     }
 
     updateMementos(id, mementos) {
         // todo
     }
-
-    // dojo (coll) => dojo_id (doc)
-    //     shortcuts (subcoll)
-    //         - shortcut_id (doc): shortcut stuff
-    //     users (subcoll)
-    //         - user_id (doc): role
-    //         (subcoll) mementos => shortcut_id (doc): memento stuff 
-    // we'll put test data under the "test" key, with a single doc "default", which subcollects all the usual data from then on
-        // we'll have to put some kind of security lock on it: maybe
-        
-    // or, if I push all query logic into cloud functions, then the cloud functions themselves can determine which database they draw from
-    // there's process environment variables, right?
 }

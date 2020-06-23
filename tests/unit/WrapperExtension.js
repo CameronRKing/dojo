@@ -1,5 +1,3 @@
-import { createWrapper, Wrapper } from '@vue/test-utils';
-
 // a simple convenience method because I think it should exist
 // trigger('click') has 9 worthless characters repeated endlessly
 Wrapper.prototype.click = function() { this.trigger('click'); };

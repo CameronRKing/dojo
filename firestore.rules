@@ -4,8 +4,5 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if true;
     }
-    match /dojos/{document} {
-      allow read: if resource.data.is_public == true || (request.auth && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles[document]))
-    }
   }
 }

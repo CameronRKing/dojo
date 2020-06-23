@@ -1,4 +1,4 @@
-import DojoHome from '../../../../src/components/DojoHome.vue'
+import DojoHome from '../../../../src/views/DojoHome.vue'
 import mountVue from 'cypress-vue-unit-test'
 
 describe('Dojo home', () => {

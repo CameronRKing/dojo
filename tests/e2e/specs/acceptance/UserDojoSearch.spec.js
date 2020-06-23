@@ -11,14 +11,6 @@ describe('Dojo lookup', () => {
         
     });
 
-    it('a user cannot see private dojos', () => {
-
-    });
-
-    it('a user can see private dojos they have a role in', () => {
-
-    });
-
     it('shows dojos the user has trained in', () => {
 
     });

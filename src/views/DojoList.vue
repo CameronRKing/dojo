@@ -9,7 +9,7 @@ export default {
     methods: {
         loadDojos() {
             this.$store.state.dojoRepo.all().then(dojos => this.dojos = dojos);
-        }
+        },
     },
     created() {
         this.loadDojos();
@@ -23,6 +23,8 @@ export default {
         v-for="dojo in dojos"
         :key="dojo.name"
         data-cy="dojo-name"
-    >{{ dojo.name }}</div>
+    >
+        <router-link :to="'/dojos/' + dojo.id">{{ dojo.name }}</router-link>
+    </div>
 </div>
 </template>

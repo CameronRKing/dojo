@@ -41,7 +41,7 @@ const dojos = [
 function createDojo({ name, shortcuts, is_public }) {
     firebase.firestore().collection('dojos').add({ name, is_public }).then(doc =>
         shortcuts.forEach(shortcut => 
-            firebase.firestore().collection('dojos').doc(doc.id).collection('shortcuts').add(shortcut)
+            firebase.firestore().collection('dojos').doc(doc.id).collection('shortcuts').add(shortcut).then(() => console.log(shortcut.prompt + ' added'))
         )
     );
 }
