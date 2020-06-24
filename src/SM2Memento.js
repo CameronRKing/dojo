@@ -39,18 +39,21 @@ export function calcMemento(oldMemento, time) {
 }
 
 export default class SM2Memento {
-    constructor({ th, ef, i, nextTrainingDate }) {
+    constructor({ id, shortcutId, th, ef, i, nextTrainingDate }) {
+        this.id = id;
+        this.shortcutId = shortcutId;
         this.th = th;
         this.ef = ef;
         this.i = i;
         this.nextTrainingDate = nextTrainingDate;
     }
 
-    static initialize(times) {
+    static initialize(times, shortcutId) {
         const today = new Date();
         const tomorrow = today.setDate(today.getDate() + 1);
 
         return new SM2Memento({
+            shortcutId,
             i: 1,
             ef: 2.5,
             th: avg(times),
@@ -76,5 +79,10 @@ export default class SM2Memento {
         this.i = calcInterval(this.i, this.ef);
         const today = new Date();
         this.nextTrainingDate = today.setDate(today.getDate() + this.i);
+    }
+
+    toPlainObject() {
+        const { shortcutId, i, ef, th, nextTrainingDate } = this;
+        return { shortcutId, i, ef, th, nextTrainingDate };
     }
 }

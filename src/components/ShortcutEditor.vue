@@ -1,12 +1,6 @@
 <script>
 import KeyValue from '@/components/KeyValue.vue';
 
-function remove(arr, item) {
-    const idx = arr.indexOf(item);
-    if (idx == -1) return;
-    arr.splice(idx, 1);
-}
-
 export default {
     components: {
         KeyValue
@@ -19,7 +13,6 @@ export default {
         };
     },
     methods: {
-        remove,
         addShortcut() {
             this.shortcutUnderEdit = {
                 prompt: '',
@@ -48,8 +41,8 @@ export default {
 <div>
     <table>
         <tr
-            v-for="item in shortcuts"
-            :key="item.action"
+            v-for="item in shortcuts.filter(item => !item.shouldDelete)"
+            :key="item.prompt"
         >
             <td>
                 <template v-if="item == shortcutUnderEdit">
@@ -90,7 +83,7 @@ export default {
                 <template v-else>{{ item.tags.join(' ') }}</template>
             </td>
             <td @click="shortcutUnderEdit = item"><button>Edit</button></td>
-            <td @click="remove(shortcuts, item)"><button>Delete</button></td>
+            <td @click="$set(item, 'shouldDelete', true)"><button>Delete</button></td>
         </tr>
     </table>
     <button @click="addShortcut">Add new shortcut</button>

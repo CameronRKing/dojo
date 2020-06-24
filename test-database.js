@@ -32,14 +32,14 @@ firebase.firestore().settings({
 
 
 const dojos = [
-    { is_public: true, name: 'Olympus', shortcuts: repeat(10, mockShortcut) },
-    { is_public: true, name: 'TailwindCSS', shortcuts: repeat(15, mockShortcut) },
-    { is_public: false, name: 'Illuminati Mind-Control Spells', shortcuts: repeat(5, mockShortcut) },
-    { is_public: false, name: 'Lizard People Code Names', shortcuts: repeat(12, mockShortcut) }
+    { owners: ['UUhRavZGiVYzRuCnKq8bRXjOVRa2'], name: 'Olympus', shortcuts: repeat(10, mockShortcut) },
+    { owners: ['UUhRavZGiVYzRuCnKq8bRXjOVRa2'], name: 'TailwindCSS', shortcuts: repeat(15, mockShortcut) },
+    { owners: [], name: 'Illuminati Mind-Control Spells', shortcuts: repeat(5, mockShortcut) },
+    { owners: [], name: 'Lizard People Code Names', shortcuts: repeat(12, mockShortcut) }
 ];
 
-function createDojo({ name, shortcuts, is_public }) {
-    firebase.firestore().collection('dojos').add({ name, is_public }).then(doc =>
+function createDojo({ name, shortcuts, owners }) {
+    firebase.firestore().collection('dojos').add({ name, owners }).then(doc =>
         shortcuts.forEach(shortcut => 
             firebase.firestore().collection('dojos').doc(doc.id).collection('shortcuts').add(shortcut).then(() => console.log(shortcut.prompt + ' added'))
         )

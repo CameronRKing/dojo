@@ -3,7 +3,7 @@ import { mapWithKeys, remove, next, prev, pairs, assocIn } from '@/utils';
 import SM2Memento from '@/SM2Memento';
 
 /**
- * This algorithm is a naive implementation of the first few stages of Pimsleur's graudated interval recall
+ * This algorithm is a naive implementation of the first few stages of Pimsleur's graduated interval recall
  * https://en.wikipedia.org/wiki/Spaced_repetition#Pimsleur's_graduated-interval_recall
  * This implementation uses five buckets.
  * At first, all items are waiting to be learned.
@@ -122,7 +122,7 @@ export default class LearnShortcutProvider extends ShortcutProvider {
             // this should really not be used directly,
             // but until there's a need for plugging in other algorithms,
             // the dependency injection is just more trouble than its worth
-            shortcut.memento = SM2Memento.initialize(this.getResponseTimes(shortcut));
+            shortcut.memento = SM2Memento.initialize(this.getResponseTimes(shortcut), shortcut.id);
         })
     }
 }

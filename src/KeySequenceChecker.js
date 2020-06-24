@@ -75,6 +75,7 @@ export default class KeySequenceChecker {
         if (this.isModifier(event)) return;
         
         const nextCombo = this.getNextKeyCombo(event);
+        if (!nextCombo) return;
         if (this.isWrong(nextCombo, event)) {
             this.alertFailure();
         }

@@ -1,5 +1,4 @@
 <script>
-
 export default {
     data() {
         return {
@@ -13,8 +12,8 @@ export default {
     },
     created() {
         this.loadDojos();
-    }
-};1
+    },
+};
 </script>
 
 <template>
@@ -24,7 +23,7 @@ export default {
         :key="dojo.name"
         data-cy="dojo-name"
     >
-        <router-link :to="'/dojos/' + dojo.id">{{ dojo.name }}</router-link>
+        <router-link @click="$store.commit('setDojo', dojo)" :to="'/dojos/' + dojo.id">{{ dojo.name }}</router-link>
     </div>
 </div>
 </template>

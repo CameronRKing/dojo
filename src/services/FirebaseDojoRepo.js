@@ -1,50 +1,6 @@
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-
-const firebaseConfig = {
-    apiKey: "AIzaSyC0AvjfMDyEwZa35UdUSSCtUFaaIgYx8HM",
-    authDomain: "fire-dojo.firebaseapp.com",
-    databaseURL: "https://fire-dojo.firebaseio.com",
-    projectId: "fire-dojo",
-    storageBucket: "fire-dojo.appspot.com",
-    messagingSenderId: "161498702009",
-    appId: "1:161498702009:web:0a0454fbf498064feefb68"
-};
-
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-
-if (location.hostname === "localhost") {
-    window.fb = firebase;
-    window.fs = firebase.firestore();
-    firebase.firestore().settings({
-        host: "localhost:5000",
-        ssl: false
-    });
-}
-
-// turns a string like 'dojos/mydojo/shortcuts' into a query builder
-// in this case, firebase.firestore().collection('dojos').doc('mydojo').collection('shortcuts')
-function path(str) {
-    let collOrDoc = 'collection';
-    const toggleCollOrDoc = () => collOrDoc = (collOrDoc == 'collection' ? 'doc' : 'collection');
-    const next = () => {
-        const toReturn = collOrDoc;
-        toggleCollOrDoc();
-        return toReturn;
-    }
-    return str.split('/').reduce((acc, fragment) => acc[next()](fragment), firebase.firestore());
-}
-
-function docify(snapshot) {
-    const makeDoc = (doc) => ({ ...doc.data(), id: doc.id });
-    if (snapshot.forEach) {
-        const docs = [];
-        snapshot.forEach(doc => docs.push(makeDoc(doc)));
-        return docs;
-    }
-    return makeDoc(snapshot);
-}
+import { path, docify, db } from './FirebaseShared.js';
+import { mapWithKeys } from '@/utils.js';
+import SM2Memento from '@/SM2Memento.js';
 
 export default class FirebaseDojoRepo {
     constructor(user=null) {
@@ -56,22 +12,59 @@ export default class FirebaseDojoRepo {
     }
 
     all() {
-        return path('dojos').where('is_public', '==', true).get().then(docify);
-    }
-
-    private() {
-        return path('dojos').where('is_public', '==', false).get().then(docify);
+        return path('dojos').get().then(docify);
     }
 
     byId(id) {
-        return path(`dojos/${id}`).get().then(docify)
+        return path(`dojos/${id}`).get().then(docify);
     }
 
-    shortcuts(id) {
-        return path(`dojos/${id}/shortcuts`).get().then(docify)
+    async shortcuts(id) {
+        const shortcuts = await path(`dojos/${id}/shortcuts`).get().then(docify);
+        if (!this.userId()) return shortcuts;
+        
+        const mementos = await this.mementoPath(id).get().then(docify);
+        const byShortcut = mapWithKeys(mementos, memento => [memento.shortcutId, memento]);
+        return shortcuts.map(shortcut => {
+            const memento = byShortcut[shortcut.id]
+            if (memento) {
+                shortcut.memento = new SM2Memento(memento);
+            }
+            return shortcut;
+        });
     }
 
-    updateMementos(id, mementos) {
-        // todo
+    mementoPath(id) {
+        return path(`dojos/${id}/users/${this.userId()}/mementos`);
+    }
+
+    updateShortcuts(id, shortcuts) {
+        const batch = db.batch();
+        shortcuts.forEach(shortcut => {
+            const data = {...shortcut};
+            delete data.memento;
+
+            const basePath = path(`dojos/${id}/shortcuts`);
+
+            if (shortcut.shouldDelete)
+                batch.delete(basePath.doc(shortcut.id));
+            else if (shortcut.id)
+                batch.update(basePath.doc(shortcut.id), data);
+            else
+                batch.set(basePath.doc(), data);
+        });
+        return batch.commit();
+    }
+
+    updateMementos(id, shortcuts) {
+        const batch = db.batch();
+        shortcuts.forEach(({ memento }) => {
+            const basePath = this.mementoPath(id);
+            if (memento.id)
+                batch.update(basePath.doc(memento.id), memento.toPlainObject());
+            else
+                batch.set(basePath.doc(), memento.toPlainObject());
+        });
+        return batch.commit();
     }
 }

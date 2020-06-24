@@ -2,11 +2,31 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <router-link to="/dojos">Dojo List</router-link> |
+      <a v-if="$store.state.user" href="#" @click="logout">Logout</a>
+      <router-link v-else to="/login">Sign up or Login</router-link>
     </div>
     <router-view/>
   </div>
 </template>
+
+
+<script>
+import firebase from 'firebase/app';
+
+export default {
+    created() {
+        firebase.auth().onAuthStateChanged(user => {
+            this.$store.commit('updateUser', user);
+        });
+    },
+    methods: {
+        logout() {
+            firebase.auth().signOut().then(() => this.$router.push('/'));
+        }
+    }
+}
+</script>
 
 <style lang="postcss">
 @tailwind base;
